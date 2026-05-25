@@ -1,0 +1,93 @@
+/* 
+  .id-card {
+    width: 324px;
+    height: 204px;
+    background-color: #2d3e50;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    color: #fff;
+    user-select: none;
+}
+
+.id-card-header {
+    padding: 20px;
+    background-color: #fff;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    text-align: center;
+}
+.id-card-photo {
+  width:70px;
+  height: 70px;
+  border-radius: 50%;
+}
+
+.id-card-body {
+    text-align: center;
+}
+
+.id-card-body h2 {
+    margin: 6px 0;
+    font-size: 1.4em;
+}
+
+.id-card-body p {
+    margin: 1px 0;
+    font-size: 0.9em;
+} */
+
+.id-card {
+  width: 204px;  /* Switch width and height */
+  height: 324px;
+  background-color: #2d3e50;
+  border-radius: 10px;
+  border-color:  rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  color: #fff;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+
+.id-card-header {
+  width: 100%; /* Ensure header spans the full width */
+  background-color: #fff;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 22px 0; /* Adjust padding for vertical alignment */
+}
+
+.id-card-photo {
+  width: 105px;
+  height: 105px;
+  border-radius: 50%;
+}
+
+.id-card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px 0; /* Add padding for spacing */
+  flex: 1;
+}
+
+.id-card-body h2 {
+  margin-top: -10px;
+  /* margin: 6px 0; */
+  font-size: 1.5em;
+}
+
+.id-card-body p {
+  margin: 3px 0;
+  font-size: 0.7em;
+}
+
+

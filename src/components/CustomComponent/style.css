@@ -1,0 +1,33 @@
+.gradient-tab {
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+   
+    transition: all 0.3s ease;
+  }
+  
+  .gradient-tab:hover {
+    opacity: 0.9;
+  }
+  .gradient-text {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-color: black;
+
+  }
+
+  .gradient-text.active {
+       /* background: linear-gradient(to right, #30c08b, #2D6ECF); */
+     
+       background:linear-gradient(to right, #30c08b, #2D6ECF);
+       -webkit-background-clip: text;
+       -webkit-text-fill-color: transparent;
+
+
+  }
