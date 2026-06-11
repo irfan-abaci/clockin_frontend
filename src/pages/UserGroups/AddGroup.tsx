@@ -22,6 +22,7 @@ const AddGroup = ({ isOpen, setIsOpen, tableRef, title, id }: any) => {
 		defaultValues: {
 			name: '',
 			group_type: null,
+			priority_choice_number: 0,
 			parent_group: null,
 			lead_one: null,
 			lead_two: null,
@@ -180,6 +181,7 @@ const AddGroup = ({ isOpen, setIsOpen, tableRef, title, id }: any) => {
 				reset({
 					name: group?.name || '',
 					group_type: selectedType,
+					priority_choice_number: group?.priority_choice_number ?? 0,
 					parent_group: selectedParent,
 					lead_one: selectedLeadOne,
 					lead_two: selectedLeadTwo,
@@ -204,6 +206,7 @@ const AddGroup = ({ isOpen, setIsOpen, tableRef, title, id }: any) => {
 		const sharedPayload = {
 			name: data?.name || '',
 			type: data?.group_type?.value || '',
+			priority_choice_number: Number(data?.priority_choice_number || 0),
 			parent_group: data?.parent_group?.value || null,
 			lead_one: data?.lead_one?.value || null,
 			lead_two: data?.lead_two?.value || null,

@@ -8,9 +8,7 @@ import useTablestyle from '../../../hooks/useTablestyles';
 import { formatFilters } from '../../../helpers/functions';
 import useToasterNotification from '../../../hooks/useToasterNotification';
 import EditButton from '../../../components/CustomComponent/Buttons/EditButton';
-import Card, { CardActions, CardBody, CardHeader, CardTitle } from '../../../components/bootstrap/Card';
-import AddButton from '../../../components/CustomComponent/Buttons/AddButton';
-import AddLeaveType from './AddLeaveType';
+import Card, { CardBody } from '../../../components/bootstrap/Card';
 import { CARRY_FORWARD_OPTIONS } from './LeaveTypeFields';
 
 const carryForwardDisplayLabel = (raw: unknown): string => {
@@ -35,19 +33,14 @@ const formatClubbableWithCell = (rowData: any): string => {
 const booleanYesNo = (v: unknown) =>
 	v === true || v === 'true' || v === 1 || v === '1' ? 'Yes' : 'No';
 
-const LeaveType = ({  }: any) => {
-	const tableRef = useRef(null);
+type LeaveTypeProps = {
+	tableRef: React.MutableRefObject<any>;
+	editModalToggle: (id: any) => void;
+	onRowClick?: (rowData: any) => void;
+};
+
+const LeaveType = ({ tableRef, editModalToggle, onRowClick }: LeaveTypeProps) => {
 	const urlBackup = useRef('');
-	const [isFormOpen, setIsFormOpen] = useState(false);
-	const [editId, setEditId] = useState<any>(null);
-	const editModalToggle = (id: any) => {
-		setEditId(id);
-		setIsFormOpen(true);
-	};
-	const openAddModal = () => {
-		setEditId(null);
-		setIsFormOpen(true);
-	};
 	const [filterEnabled, setFilterEnabled] = useState(false);
 	const [pageSize, setPageSize] = useState(5);
 	const [sortState, setSortState] = useState({ orderBy: null, orderDirection: 'asc' });
@@ -162,25 +155,7 @@ const LeaveType = ({  }: any) => {
     }, []);
 
 	return (
-		<>
-		{isFormOpen && (
-			<AddLeaveType
-				isOpen={isFormOpen}
-				setIsOpen={setIsFormOpen}
-				tableRef={tableRef}
-				title={editId ? 'Edit Leave Type' : 'Add Leave Type'}
-				id={editId}
-			/>
-		)}
 		<Card stretch>
-			<CardHeader>
-				<CardTitle tag='div' className='h6'>
-					Leave Types
-				</CardTitle>
-				<CardActions>
-					<AddButton name='Add Leave Type' modalShow={openAddModal} />
-				</CardActions>
-			</CardHeader>
 			<CardBody>
 
 		<div className='material-table-wrapper'>
@@ -190,7 +165,13 @@ const LeaveType = ({  }: any) => {
 					title=' '
 					columns={columns as any}
 					tableRef={tableRef}
-					// onChangeRowsPerPage={setPageSize}
+					onRowClick={
+						onRowClick
+							? (_event, rowData: any) => {
+									if (rowData?.id != null) onRowClick(rowData);
+								}
+							: undefined
+					}
 					onOrderChange={(orderBy, orderDirection) => {
 						setSortState({ orderBy, orderDirection });
 					}}
@@ -242,7 +223,10 @@ const LeaveType = ({  }: any) => {
 					]}
 					options={{
 						headerStyle: headerStyles(),
-						rowStyle: rowStyles(),
+						rowStyle: () => ({
+							...rowStyles(),
+							...(onRowClick ? { cursor: 'pointer' } : {}),
+						}),
 						debounceInterval: 500,
 						filtering: filterEnabled,
 						search: true,
@@ -252,17 +236,16 @@ const LeaveType = ({  }: any) => {
 			
 			</ThemeProvider>
 		</div>
-		</CardBody>
+			</CardBody>
 		</Card>
-		</>
 	);
 };
 
 /* eslint-disable react/forbid-prop-types */
 LeaveType.propTypes = {
 	tableRef: PropTypes.object.isRequired,
-	urlBackup: PropTypes.object.isRequired,
 	editModalToggle: PropTypes.func.isRequired,
+	onRowClick: PropTypes.func,
 };
 /* eslint-enable react/forbid-prop-types */
 

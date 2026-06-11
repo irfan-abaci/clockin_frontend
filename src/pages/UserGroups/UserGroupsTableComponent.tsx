@@ -31,6 +31,15 @@ const UserGroupsTableComponent = ({ tableRef, urlBackup,editModalToggle }: any) 
 				render: (rowData: any) => rowData?.type || '----',
 			},
 			{
+				title: 'Priority',
+				field: 'priority_choice_number',
+				render: (rowData: any) =>
+					rowData?.priority_choice_number != null &&
+					String(rowData.priority_choice_number).trim() !== ''
+						? String(rowData.priority_choice_number)
+						: '----',
+			},
+			{
 				title: 'Parent Group',
 				field: 'parent_group_name',
 				sorting: false,

@@ -2,8 +2,15 @@ import React from 'react';
 import dayjs from 'dayjs';
 import { Calendar, dayjsLocalizer, Views } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { statusColorLightBackground } from '../../pages/Attendance/attendanceStatusUtils';
 
 const localizer = dayjsLocalizer(dayjs);
+
+const weekdayLabel = (date: Date) => dayjs(date).format('ddd').toUpperCase();
+
+const MonthDayHeader = ({ label }: { label: string }) => (
+	<span className='rbc-month-day-name'>{String(label || '').toUpperCase()}</span>
+);
 
 type CustomCalendarProps = {
 	events: any[];
@@ -28,7 +35,7 @@ const CustomCalendar = ({
 	eventPropGetter: eventPropGetterProp,
 	onNavigate,
 	onDateClick,
-	height = '70vh',
+	height = '85vh',
 	startAccessor = 'start',
 	endAccessor = 'end',
 	toolbar = false,
@@ -55,6 +62,7 @@ const CustomCalendar = ({
 	const EventContent = ({ event }: any) => {
 		const text = String(event?.title || '');
 		if (event?.resource?.kind === 'shift') {
+			const accent = String(event?.color || '#495057');
 			return (
 				<span
 					className='rbc-shift-event-card'
@@ -64,14 +72,14 @@ const CustomCalendar = ({
 						whiteSpace: 'pre-line',
 						wordBreak: 'break-word',
 						lineHeight: 1.25,
-						background: '#fff',
-						color: '#212529',
-						borderRadius: 4,
+						background: statusColorLightBackground(accent),
+						color: accent,
+						borderRadius: 2,
 						padding: '2px 5px',
-						border: '1px solid rgba(0, 0, 0, 0.12)',
+						border: 'none',
 						fontSize: '0.68rem',
 						fontWeight: 600,
-						boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)',
+						boxShadow: 'none',
 					}}>
 					{text}
 				</span>
@@ -87,7 +95,7 @@ const CustomCalendar = ({
 	};
 
 	return (
-		<div style={{ height, width: '100%' }}>
+		<div className='schedule-calendar-grid' style={{ height, width: '100%' }}>
 			<Calendar
 				localizer={localizer}
 				toolbar={toolbar}
@@ -98,7 +106,13 @@ const CustomCalendar = ({
 				defaultView={Views.MONTH}
 				date={date}
 				onNavigate={onNavigate}
+				formats={{
+					weekdayFormat: (d: Date) => weekdayLabel(d),
+				}}
 				components={{
+					month: {
+						header: MonthDayHeader,
+					},
 					dateCellWrapper: DayCellWrapper,
 					event: EventContent,
 				}}
@@ -144,7 +158,7 @@ CustomCalendar.defaultProps = {
 	eventPropGetter: undefined,
 	onNavigate: undefined,
 	onDateClick: undefined,
-	height: '70vh',
+	height: '85vh',
 	startAccessor: 'start',
 	endAccessor: 'end',
 	toolbar: false,

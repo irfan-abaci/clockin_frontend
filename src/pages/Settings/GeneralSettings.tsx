@@ -48,7 +48,7 @@ const GeneralSettings: FC<EmailFormPropTypes> = ({ register, errors, getValues, 
     <Card className='user-select-none shadow-3d-secondary'>
       <CardHeader>
         <CardLabel icon='Settings' iconColor='secondary'>
-          <CardTitle tag='div' className='h5'>General Settings</CardTitle>
+          <CardTitle tag='div' className='h5 text-warning'>General Settings</CardTitle>
         </CardLabel>
         <CardActions>
           {canManageSettings &&

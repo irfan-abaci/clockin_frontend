@@ -10,7 +10,7 @@ type Props = {
 	height?: string;
 };
 
-const GroupMonthlyCalendarSection = ({ groupId, height = '50vh' }: Props) => {
+const GroupMonthlyCalendarSection = ({ groupId, height = '65vh' }: Props) => {
 	const [modalOpen, setModalOpen] = useState(false);
 	const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 	const [dayDetail, setDayDetail] = useState<any | null>(null);

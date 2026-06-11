@@ -13,6 +13,7 @@ import Popovers from '../../components/bootstrap/Popovers';
 import Notifications from './Notifications';
 import DateAndTimeComponent from '../../components/MasterComponents/HeaderComponents/DateandTime';
 import ToggleButton from './ToggleButton';
+import { canUseRoleToggle } from '../../helpers/roleToggleUtils';
 
 interface IMainHeaderRightProps {
 	beforeChildren?: ReactNode;
@@ -48,7 +49,7 @@ const MainHeaderRight: FC<IMainHeaderRightProps> = ({ beforeChildren, afterChild
 				<div className='col-auto'>
 				<DateAndTimeComponent />
 			</div>
-			{userData?.user_type === 'Admin' && (
+			{canUseRoleToggle(userData?.user_type) && (
 				<div className='col-auto'>
 					<ToggleButton />
 				</div>

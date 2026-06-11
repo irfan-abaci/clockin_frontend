@@ -1,43 +1,73 @@
-import React from 'react'
+import React from 'react';
+import classNames from 'classnames';
 import { Controller } from 'react-hook-form';
-import { Input as Checkbox } from 'reactstrap';
+import GradientToggleSwitch from './GradientToggleSwitch';
 
+const CheckboxWithLabel = ({
+	control,
+	name,
+	label,
+	labelFirst = false,
+	layout = 'inline',
+	className,
+}: any) => {
+	const switchNode = (
+		<Controller
+			name={name}
+			control={control}
+			rules={{
+				required: false,
+			}}
+			render={({ field }: any) => (
+				<GradientToggleSwitch
+					id={name}
+					checked={Boolean(field.value)}
+					onChange={field.onChange}
+				/>
+			)}
+		/>
+	);
 
-const CheckboxWithLabel = ({control,watch,name,label ,size}:any) => {
-   const checked=watch(name)
-  return (
-    <div className=' d-flex gap-2  mb-2'>
-    <Controller
-        name={name}
-        control={control}
-        rules={{
-            required:false,
-        }}
-        render={({ field }:any) => (
-         <Checkbox
-            type='switch'         
-            id={name}
-            checked={checked}
-            onChange={(e:any) => {
-                field.onChange(e.target.checked);
-            }}
-            style={{
-                width:size,
-                height:size,
-                cursor: 'pointer',
-                color: '#fff',
-            }}
-       />
-    )}
-/>
-<label
-    className='mt-1'
-    style={{ fontWeight: 450, color: '#6C757D',cursor:'pointer' ,userSelect:'none'}}
-    htmlFor={name}>
-    {label}
-</label>
-</div>
-  )
-}
+	if (layout === 'form-field') {
+		return (
+			<div className={classNames('hr-settings-toggle-row', className)}>
+				<label htmlFor={name} className='hr-settings-toggle-row__label'>
+					{label}
+				</label>
+				<div className='hr-settings-toggle-row__control'>{switchNode}</div>
+			</div>
+		);
+	}
 
-export default CheckboxWithLabel
+	const labelNode = (
+		<label
+			className='mb-0'
+			style={{ fontWeight: 450, color: '#6C757D', cursor: 'pointer', userSelect: 'none' }}
+			htmlFor={name}>
+			{label}
+		</label>
+	);
+
+	return (
+		<div
+			className={classNames(
+				'd-flex align-items-center gap-2 mb-2',
+				labelFirst && 'justify-content-between w-100',
+				className,
+			)}>
+			{labelFirst ? (
+				<>
+					{labelNode}
+					{switchNode}
+				</>
+			) : (
+				<>
+					{switchNode}
+					{labelNode}
+				</>
+			)}
+		</div>
+	);
+};
+
+export default CheckboxWithLabel;

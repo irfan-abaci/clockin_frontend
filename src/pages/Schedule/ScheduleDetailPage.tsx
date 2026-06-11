@@ -11,6 +11,7 @@ import useToasterNotification from '../../hooks/useToasterNotification';
 import ScheduleDetails from './ScheduleDetails';
 import ScheduleShiftsTimeline from './ScheduleShiftsTimeline';
 import ScheduleMonthlyCalendarSection from './ScheduleMonthlyCalendarSection';
+import DashboardDaySummary from '../Dashboard/DashboardDaySummary';
 
 const ScheduleDetailPage = () => {
 	const { id } = useParams();
@@ -76,6 +77,11 @@ const ScheduleDetailPage = () => {
 				)}
 				{!loading && (
 					<div className='row'>
+						{id ? (
+							<div className='col-12 mb-4'>
+								<DashboardDaySummary scheduleId={id} />
+							</div>
+						) : null}
 						<div className='col-12 mb-4'>
 							<ScheduleDetails
 								schedule={schedule}

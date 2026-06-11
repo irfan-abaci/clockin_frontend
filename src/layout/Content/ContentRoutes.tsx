@@ -10,14 +10,14 @@ import AuthContext from '../../contexts/authContext';
 import Unauthorized from '../../pages/PublicPages/Unauthorized';
 import AbaciLoader from '../../components/AbaciLoader/AbaciLoader';
 import RouteConfig from '../../routes/contentRoutes';
+import { getEffectiveUserTypeForRoutes } from '../../helpers/roleToggleUtils';
 
 
 const ContentRoutes = () => {
 	const { userData } = useContext(AuthContext);
 	const accountToggle = useSelector((state: any) => state.authSlice?.account_toggle_button);
 	const mode = accountToggle || 'Admin';
-	const effectiveUserType =
-		userData?.user_type === 'Admin' && mode === 'Self' ? 'user' : userData?.user_type;
+	const effectiveUserType = getEffectiveUserTypeForRoutes(userData?.user_type, mode);
 
 	const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {

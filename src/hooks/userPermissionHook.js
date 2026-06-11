@@ -15,7 +15,7 @@ const permissionObject = {
 	manage_schedule: ['super_admin', 'admin'],
 	manage_shift: ['super_admin', 'admin'],
 	view_user_details: ['super_admin','admin_assistant','admin'],
-    manage_general_settings: ['super_admin','admin'],
+    manage_general_settings: ['super_admin','Admin'],
 	manage_building: ['super_admin','admin'],
 	manage_controller: ['super_admin','admin'],
 

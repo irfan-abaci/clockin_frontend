@@ -16,20 +16,20 @@ const todayLocalDateString = () => {
 	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 };
 
-const appendFormField = (formData: FormData, key: string, value: unknown) => {
+export const appendLeaveFormField = (formData: FormData, key: string, value: unknown) => {
 	if (value != null && value !== '') {
 		formData.append(key, String(value));
 	}
 };
 
-const buildLeaveRequestFormData = (data: any): FormData => {
+export const buildLeaveRequestFormData = (data: any): FormData => {
 	const formData = new FormData();
-	appendFormField(formData, 'leave_type', data?.leave_type?.value);
-	appendFormField(formData, 'from_date', data?.from_date);
-	appendFormField(formData, 'to_date', data?.to_date);
-	appendFormField(formData, 'from_session', data?.from_session?.value || 'FULL');
-	appendFormField(formData, 'to_session', data?.to_session?.value || 'FULL');
-	appendFormField(formData, 'reason', data?.reason);
+	appendLeaveFormField(formData, 'leave_type', data?.leave_type?.value);
+	appendLeaveFormField(formData, 'from_date', data?.from_date);
+	appendLeaveFormField(formData, 'to_date', data?.to_date);
+	appendLeaveFormField(formData, 'from_session', data?.from_session?.value || 'FULL');
+	appendLeaveFormField(formData, 'to_session', data?.to_session?.value || 'FULL');
+	appendLeaveFormField(formData, 'reason', data?.reason);
 	return formData;
 };
 

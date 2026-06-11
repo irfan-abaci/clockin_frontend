@@ -83,7 +83,7 @@ const GroupDetailPage = () => {
 									</CardLabel>
 								</CardHeader>
 								<CardBody>
-									<GroupMonthlyCalendarSection groupId={id} height='50vh' />
+									<GroupMonthlyCalendarSection groupId={id} height='65vh' />
 								</CardBody>
 							</Card>
 						</div>

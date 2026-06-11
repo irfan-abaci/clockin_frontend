@@ -5,6 +5,7 @@ import useToasterNotification from '../../../hooks/useToasterNotification';
 import {
 	ATTENDANCE_REMOVED_META,
 	isAttendanceDeleted,
+	calendarEventStyleFromColor,
 } from '../../../pages/Attendance/attendanceStatusUtils';
 import {
 	shiftLabelsFromShiftsField,
@@ -43,7 +44,7 @@ const ReusableScheduleCalendar = ({
 	calendarType = 'user',
 	entityId,
 	userId,
-	height = '70vh',
+	height = '85vh',
 	enableViewFilter = false,
 	hideLoadingIndicator = true,
 	onInitialLoadComplete,
@@ -65,6 +66,8 @@ const ReusableScheduleCalendar = ({
 	useEffect(() => {
 		initialLoadNotifiedRef.current = false;
 	}, [calendarType, resolvedEntityId]);
+
+	const selectedYearMonth = selectedMonth.format('YYYY-MM');
 
 	const monthBounds = useMemo(
 		() => ({
@@ -235,6 +238,18 @@ const ReusableScheduleCalendar = ({
 		return 0;
 	};
 
+	const getTotalWorkedHrs = (row: any): number | null => {
+		const att = row?.attendance;
+		if (att && typeof att === 'object' && !Array.isArray(att)) {
+			const raw = att.total_worked_hrs ?? att.total_worked_hours;
+			const n = Number(raw);
+			if (Number.isFinite(n) && n >= 0) return n;
+		}
+		const top = Number(row?.total_worked_hrs ?? row?.total_worked_hours);
+		if (Number.isFinite(top) && top >= 0) return top;
+		return null;
+	};
+
 	const buildScheduleEventTitle = (row: any): string => {
 		const lines: string[] = [];
 		const sd = row?.special_day;
@@ -319,6 +334,12 @@ const ReusableScheduleCalendar = ({
 		const statusMeta = getStatusMeta(dayStatus);
 		if (!statusMeta) return;
 		let title = statusMeta.label;
+		if (normalizeStatusKey(dayStatus) === 'PRESENT') {
+			const workedHrs = getTotalWorkedHrs(row);
+			if (workedHrs != null) {
+				title = `${title}\nWorked: ${workedHrs}hrs`;
+			}
+		}
 		if (calendarType === 'group') {
 			const counts = getGroupDayScheduleCounts(row);
 			if (counts) {
@@ -591,7 +612,7 @@ const ReusableScheduleCalendar = ({
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [selectedYearMonth]);
 
 	return (
 		<div>
@@ -619,7 +640,7 @@ const ReusableScheduleCalendar = ({
 					)}
 				</div>
 			)}
-			<div className='position-relative' style={{ minHeight: height }}>
+			<div className='position-relative schedule-calendar' style={{ minHeight: height }}>
 				{loading ? (
 					hideLoadingIndicator ? (
 						<div style={{ height }} aria-hidden />
@@ -650,15 +671,9 @@ const ReusableScheduleCalendar = ({
 									},
 								};
 							}
-							const bg = event?.color ?? SCHEDULE_EVENT_COLOR;
+							const accent = event?.color ?? SCHEDULE_EVENT_COLOR;
 							return {
-								style: {
-									backgroundColor: bg,
-									borderColor: bg,
-									color: '#fff',
-									fontSize: '0.72rem',
-									lineHeight: 1.25,
-								},
+								style: calendarEventStyleFromColor(accent),
 							};
 						}}
 					/>
@@ -675,7 +690,7 @@ ReusableScheduleCalendar.defaultProps = {
 	calendarType: 'user',
 	entityId: undefined,
 	userId: undefined,
-	height: '70vh',
+	height: '85vh',
 	hideLoadingIndicator: true,
 };
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Form } from 'reactstrap';
 import { useForm } from 'react-hook-form';
@@ -18,25 +18,6 @@ export type LeaveRequestUploadContext = {
 	id: number | string;
 	employeeName?: string;
 	leaveTypeName?: string;
-	documents?: unknown;
-};
-
-const normalizeDocuments = (raw: unknown): { id?: number | string; name?: string; file?: string }[] => {
-	if (Array.isArray(raw)) return raw as { id?: number | string; name?: string; file?: string }[];
-	if (raw && typeof raw === 'object') return [raw as { id?: number | string; name?: string; file?: string }];
-	return [];
-};
-
-const documentLabel = (doc: { name?: string; file?: string; id?: number | string }) => {
-	if (doc.name?.trim()) return doc.name.trim();
-	if (typeof doc.file === 'string' && doc.file) {
-		try {
-			return decodeURIComponent(new URL(doc.file).pathname.split('/').pop() || '') || `Document ${doc.id}`;
-		} catch {
-			return doc.file.split('/').pop() || `Document ${doc.id}`;
-		}
-	}
-	return `Document ${doc.id ?? ''}`.trim();
 };
 
 type LeaveRequestUploadDocumentModalProps = {
@@ -61,15 +42,7 @@ const LeaveRequestUploadDocumentModal = ({
 	const [saving, setSaving] = useState(false);
 	const { showErrorNotification, showSuccessNotification } = useToasterNotification();
 
-	const existingDocs = useMemo(
-		() => normalizeDocuments(context?.documents),
-		[context?.documents],
-	);
-
-	const subtitle = useMemo(() => {
-		const parts = [context?.employeeName, context?.leaveTypeName].filter(Boolean);
-		return parts.length ? parts.join(' · ') : '';
-	}, [context?.employeeName, context?.leaveTypeName]);
+	const subtitle = [context?.employeeName, context?.leaveTypeName].filter(Boolean).join(' · ');
 
 	useEffect(() => {
 		if (isOpen) reset({ name: '', file: undefined as unknown as FileList });
@@ -99,33 +72,17 @@ const LeaveRequestUploadDocumentModal = ({
 
 	return (
 		<Modal isOpen={isOpen} setIsOpen={setIsOpen} size='md' isCentered>
-			<ModalHeader className='p-4' setIsOpen={setIsOpen}>
-				<ModalTitle id='leave-request-upload-document'>Upload document</ModalTitle>
-				{subtitle ? <div className='text-muted small fw-normal mt-1'>{subtitle}</div> : null}
+			<ModalHeader className='p-4 align-items-start' setIsOpen={setIsOpen}>
+				<div className='d-flex flex-column w-100'>
+					<ModalTitle id='leave-request-upload-document' className='mb-0'>
+						Upload document
+					</ModalTitle>
+					{subtitle ? <div className='text-muted small fw-normal mt-1'>{subtitle}</div> : null}
+				</div>
 			</ModalHeader>
 			<Form onSubmit={handleSubmit(onSubmit)}>
 				<ModalBody className='px-4 pb-2'>
-					{existingDocs.length > 0 && (
-						<div className='mb-3'>
-							<div className='small text-muted text-uppercase fw-semibold mb-2'>
-								Existing documents
-							</div>
-							<ul className='list-unstyled mb-0 small'>
-								{existingDocs.map((doc, i) => (
-									<li key={doc.id ?? `doc-${i}`} className='mb-1'>
-										{doc.file ? (
-											<a href={doc.file} target='_blank' rel='noopener noreferrer'>
-												{documentLabel(doc)}
-											</a>
-										) : (
-											documentLabel(doc)
-										)}
-									</li>
-								))}
-							</ul>
-						</div>
-					)}
-					<FormGroup label='Document name (optional)'>
+					<FormGroup label='Document name '>
 						<input type='text' className='form-control' {...register('name')} />
 					</FormGroup>
 					<FormGroup label='File *'>

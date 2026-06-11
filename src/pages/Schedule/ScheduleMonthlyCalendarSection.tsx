@@ -16,7 +16,7 @@ type Props = {
 	height?: string;
 };
 
-const ScheduleMonthlyCalendarSection = ({ scheduleId, height = '60vh' }: Props) => {
+const ScheduleMonthlyCalendarSection = ({ scheduleId, height = '75vh' }: Props) => {
 	const [modalOpen, setModalOpen] = useState(false);
 	const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 	const [dayDetail, setDayDetail] = useState<any | null>(null);

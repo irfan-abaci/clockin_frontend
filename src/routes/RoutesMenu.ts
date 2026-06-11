@@ -37,6 +37,15 @@ export const allRoutesObject = {
 		id: 'ScheduleComponentDemo',
 		path: '/schedule-component-demo',
 	},
+	LeaveRequests: {
+		id: 'LeaveRequests',
+		path: '/leave-requests',
+	},
+	LeaveTypes: {
+		id: 'LeaveTypes',
+		path: '/leave-types',
+	},
+	/** @deprecated Use LeaveRequests.path — kept for redirects */
 	LeaveManagement: {
 		id: 'LeaveManagement',
 		path: '/leave-management',
@@ -85,6 +94,11 @@ export const allRoutesObject = {
 		id: 'EventLog',
 		path: '/event-log',
 		icon: 'Description',
+	},
+	settings: {
+		id: 'settings',
+		path: 'settings',
+		icon: 'Settings',
 	},
 
 }
@@ -145,11 +159,17 @@ export const CompanyAdminRoutes = {
 		path: '/roles',
 		icon: 'Badge',
 	},
-	LeaveManagement: {
-		id: 'LeaveManagement',
-		text: 'Leave Management',
-		path: '/leave-management',
+	LeaveRequests: {
+		id: 'LeaveRequests',
+		text: 'Leave Requests',
+		path: '/leave-requests',
 		icon: 'Event',
+	},
+	LeaveTypes: {
+		id: 'LeaveTypes',
+		text: 'Leave Types',
+		path: '/leave-types',
+		icon: 'EventNote',
 	},
 	Attendance: {
 		id: 'Attendance',
@@ -165,34 +185,13 @@ export const CompanyAdminRoutes = {
 	},
 
 
-	// Settings: {
-	// 	id: 'Settings',
-	// 	text: 'Settings',
-	// 	path: 'settings',
-	// 	icon: 'Settings',
-	// 	subMenu: 
-	// 	{
-	// 		GeneralSettings: {
-	// 			id: 'GeneralSettings',
-	// 			path: 'settings/general-settings',
-	// 			text: 'General settings',
-	// 			icon: 'Settings',
-
-	// 		},
-	// 		Gates: {
-	// 			id: 'Gates',
-	// 			text: 'Gates',
-	// 			path: 'settings/gates',
-	// 			icon: 'GateIcon',
-	// 		},
-	// 		EditLog: {
-	// 			id: 'EditLog',
-	// 			path: 'settings/editlog',
-	// 			text: 'Edit Log',
-	// 			icon: 'Description',
-
-	// 		},
-	// 	}
+	Settings: {
+		id: 'Settings',
+		text: 'Settings',
+		path: 'settings',
+		icon: 'Settings',
+	
+		}
 			
 		
 	// },
@@ -213,17 +212,10 @@ export const CompanyAdminRoutes = {
 
 
 export const UserRoutes = {
-	userDashboard: {
-		id: 'userDashboard',
-		text: 'Dashboard',
-		path: '/dashboard',
-		icon: 'Dashboard',
-		subMenu: null,
-	},
-	LeaveManagement: {
-		id: 'LeaveManagement',
-		text: 'Leave Management',
-		path: '/leave-management',
+	LeaveRequests: {
+		id: 'LeaveRequests',
+		text: 'Leave Requests',
+		path: '/leave-requests',
 		icon: 'Event',
 	},
 	Attendance: {
@@ -247,6 +239,7 @@ export const HRRoutes = CompanyAdminRoutes;
 
 export const roleWiseRoutes: Record<string, any> = {
 	Admin: CompanyAdminRoutes,
+	Manager: HRRoutes,
 	HR: HRRoutes,
 	user: UserRoutes,
 };

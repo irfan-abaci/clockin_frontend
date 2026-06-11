@@ -1,25 +1,30 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Modal, { ModalBody, ModalHeader, ModalTitle } from '../../../components/bootstrap/Modal';
 import CustomBadge from '../../../components/CustomComponent/CustomBadge';
+import CustomSpinner from '../../../components/CustomSpinner/CustomSpinner';
 import Icon from '../../../components/icon/Icon';
+import { authAxios } from '../../../axiosInstance';
 import useDarkMode from '../../../hooks/useDarkMode';
+import useToasterNotification from '../../../hooks/useToasterNotification';
 import { statusColorCodes } from '../../../helpers/constants';
 import {
 	actedByLabel,
 	formatActedAt,
 	formatApproverType,
+	parseApprovalStepsResponse,
 	sortApprovalSteps,
 	STEP_DOT_COLORS,
 	type LeaveApprovalStep,
+	type LeaveApprovalStepsMeta,
 } from './leaveApprovalStepUtils';
 
 export type LeaveApprovalTimelineContext = {
+	leaveRequestId?: number | string;
 	employeeName?: string;
 	leaveTypeName?: string;
 	fromDate?: string;
 	toDate?: string;
 	overallStatus?: string;
-	approval_steps?: LeaveApprovalStep[];
 };
 
 type LeaveApprovalTimelineModalProps = {
@@ -51,8 +56,51 @@ const LeaveApprovalTimelineModal = ({
 	context,
 }: LeaveApprovalTimelineModalProps) => {
 	const { darkModeStatus } = useDarkMode();
-	const steps = sortApprovalSteps(context?.approval_steps);
+	const { showErrorNotification } = useToasterNotification();
+	const showErrorRef = useRef(showErrorNotification);
+	showErrorRef.current = showErrorNotification;
+
+	const [steps, setSteps] = useState<LeaveApprovalStep[]>([]);
+	const [stepsMeta, setStepsMeta] = useState<LeaveApprovalStepsMeta>({});
+	const [loadingSteps, setLoadingSteps] = useState(false);
 	const overallStatus = String(context?.overallStatus ?? '').toUpperCase();
+
+	useEffect(() => {
+		if (!isOpen || context?.leaveRequestId == null) {
+			setSteps([]);
+			setStepsMeta({});
+			return undefined;
+		}
+
+		let cancelled = false;
+		setLoadingSteps(true);
+		setSteps([]);
+		setStepsMeta({});
+
+		authAxios
+			.get(`/api/hr/leave-requests/${context.leaveRequestId}/approval-steps/`)
+			.then((res) => {
+				if (!cancelled) {
+					const { steps: parsedSteps, meta } = parseApprovalStepsResponse(res.data);
+					setSteps(sortApprovalSteps(parsedSteps));
+					setStepsMeta(meta);
+				}
+			})
+			.catch((err) => {
+				if (!cancelled) {
+					setSteps([]);
+					setStepsMeta({});
+					showErrorRef.current(err);
+				}
+			})
+			.finally(() => {
+				if (!cancelled) setLoadingSteps(false);
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [isOpen, context?.leaveRequestId]);
 
 	const textPrimary = darkModeStatus ? '#f8f9fa' : '#111827';
 	const textMuted = darkModeStatus ? '#9ca3af' : '#6b7280';
@@ -107,18 +155,23 @@ const LeaveApprovalTimelineModal = ({
 								</div>
 							) : null}
 							{overallStatus ? (
-								<div className='col-12 pt-1'>
+								<div className={stepsMeta.currentApprovalLevel != null ? 'col-sm-6' : 'col-12 pt-1'}>
 									<div style={labelStyle(textSubtle)}>Request status</div>
 									<CustomBadge color={statusColorCodes?.[overallStatus] || '#E4E4E4'}>
 										{context?.overallStatus}
 									</CustomBadge>
 								</div>
 							) : null}
+						
 						</div>
 					</div>
 				)}
 
-				{steps.length === 0 ? (
+				{loadingSteps ? (
+					<div className='d-flex justify-content-center py-5'>
+						<CustomSpinner />
+					</div>
+				) : steps.length === 0 ? (
 					<p className='mb-0 text-center py-5' style={{ color: textMuted, fontSize: '0.9rem' }}>
 						No approvers configured for this request.
 					</p>
@@ -140,10 +193,14 @@ const LeaveApprovalTimelineModal = ({
 									isCurrent && statusKey === 'PENDING'
 										? 'HourglassEmpty'
 										: STEP_ICON[statusKey] || 'Circle';
+								const actor = actedByLabel(step?.acted_by);
 								const approverLabel =
 									step?.approver_type_display?.trim() ||
-									formatApproverType(step?.approver_type);
-								const actor = actedByLabel(step?.acted_by);
+									(step?.approver_type?.trim()
+										? formatApproverType(step.approver_type)
+										: null) ||
+									actor ||
+									(step?.level != null ? `Level ${step.level}` : 'Approver');
 								const actedAt = formatActedAt(step?.acted_at);
 								const lineColor =
 									statusKey === 'APPROVED'

@@ -75,6 +75,15 @@ const GroupDetails = ({ group }: { group: any | null }) => {
 			<CardBody className='flex-grow-1 pt-0 overflow-hidden d-flex flex-column'>
 				<div className='d-flex flex-column justify-content-between flex-grow-1 h-100'>
 					<DetailRow label='Type' value={group?.type} />
+					<DetailRow
+						label='Priority'
+						value={
+							group?.priority_choice_number != null &&
+							String(group.priority_choice_number).trim() !== ''
+								? String(group.priority_choice_number)
+								: undefined
+						}
+					/>
 					<DetailRow label='Parent group' value={parentName} />
 					<DetailRow label='1st incharge' value={leadOne} />
 					<DetailRow label='2nd incharge' value={leadTwo} />

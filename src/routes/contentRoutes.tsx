@@ -17,11 +17,14 @@ const MAINROUTE={
 	Shift: lazy(() => import('../pages/Shift/index')),
 	ScheduleComponentDemo: lazy(() => import('../pages/ScheduleComponentDemo/index')),
 	UserDetails: lazy(() => import('../pages/UserManagement/UserManagementPage')),
+	LeaveRequests: lazy(() => import('../pages/LeaveManagement/LeaveRequestsPage')),
+	LeaveTypes: lazy(() => import('../pages/LeaveManagement/LeaveTypesPage')),
 	LeaveManagement: lazy(() => import('../pages/LeaveManagement/index')),
 	Attendance: lazy(() => import('../pages/Attendance/index')),
 	UserSchedule: lazy(() => import('../pages/UserSchedule')),
 	EventLog: lazy(() => import('../pages/EventLog/index')),
 	RoleManagement: lazy(() => import('../pages/RoleManagement/index')),
+	Settings: lazy(() => import('../pages/Settings/index')),
 }
 interface CustomRouteConfig {
 	path: string;
@@ -34,11 +37,6 @@ const RouteConfig: CustomRouteConfig[] = [
 		path: allRoutesObject.dashboard.path,
 		element: <MAINROUTE.Dashboard />,
 		allowedTo:  ['Admin','HR']
-	},
-	{
-		path: '/dashboard',
-		element: <MAINROUTE.Dashboard />,
-		allowedTo: ['user', 'Admin','HR'],
 	},
 	{
 		path: pagesNotInSideBar.Profile.path,
@@ -91,9 +89,19 @@ const RouteConfig: CustomRouteConfig[] = [
 		allowedTo: ['Admin','HR'],
 	},
 	{
+		path: allRoutesObject.LeaveRequests.path,
+		element: <MAINROUTE.LeaveRequests />,
+		allowedTo: ['Admin', 'Manager', 'HR', 'user'],
+	},
+	{
+		path: allRoutesObject.LeaveTypes.path,
+		element: <MAINROUTE.LeaveTypes />,
+		allowedTo: ['Admin', 'HR'],
+	},
+	{
 		path: allRoutesObject.LeaveManagement.path,
 		element: <MAINROUTE.LeaveManagement />,
-		allowedTo: ['Admin','HR','user'],
+		allowedTo: ['Admin', 'HR', 'user'],
 	},
 	{
 		path: allRoutesObject.Attendance.path,
@@ -120,7 +128,11 @@ const RouteConfig: CustomRouteConfig[] = [
 		element: <MAINROUTE.RoleManagement />,
 		allowedTo: ['Admin', 'HR'],
 	},
-	
+	{
+		path: allRoutesObject.Settings.path,
+		element: <MAINROUTE.Settings />,
+		allowedTo: ['Admin', 'HR'],
+	},
 ]
 
 

@@ -501,6 +501,7 @@ export const SeverityColorCodes:any = {
 export const statusColorCodes:any = {
   Active:'#46BCAA',
   Inactive:'#F35421',
+  Invited:'#4D69FA',
   Unknown:'#82C200',
   Disabled:'#F35421',
   Deleted:'#d33',
@@ -510,6 +511,7 @@ export const statusColorCodes:any = {
   REJECTED:'#F35421',
   CANCELLED:'#F35421',
   PENDING:'#FFD600',
+  INVITED:'#4D69FA',
  
 
 

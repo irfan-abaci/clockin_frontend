@@ -1,6 +1,9 @@
 import React from 'react';
 import dayjs from 'dayjs';
 import Card, { CardBody, CardHeader, CardTitle } from '../../../components/bootstrap/Card';
+import { statusColorLightBackground } from '../../Attendance/attendanceStatusUtils';
+
+const HOLIDAY_ACCENT = '#BC922E';
 
 const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -103,8 +106,11 @@ const HolidayYearCalendar = ({ holidays, year }: any) => {
 														display: 'flex',
 														alignItems: 'center',
 														justifyContent: 'center',
-														border: hasHoliday ? '1px solid #fac600' : '1px solid transparent',
-														background: hasHoliday ? '#fac600' : 'transparent',
+													border: '1px solid transparent',
+													background: hasHoliday
+														? statusColorLightBackground(HOLIDAY_ACCENT)
+														: 'transparent',
+													color: hasHoliday ? HOLIDAY_ACCENT : undefined,
 													}}>
 													{dayObj.date.date()}
 												</div>

@@ -1,13 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+const LIGHT_BADGE_COLORS = new Set(['#E4E4E4', '#FFD600']);
+
 const CustomBadge = ({ children, color }) => {
-	
+	const badgeColor = color || '#E4E4E4';
+
 	return (
 		<span
 			style={{
-				backgroundColor: color,
-				color: (color === '#E4E4E4'||color === '#FFD600') ? 'black' : 'white',
+				backgroundColor: badgeColor,
+				color: LIGHT_BADGE_COLORS.has(badgeColor) ? 'black' : 'white',
 				height: '20px',
 				padding: '3px 7px 3px 7px',
 				fontSize: '9px',

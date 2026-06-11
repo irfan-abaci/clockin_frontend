@@ -1,6 +1,7 @@
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import MaterialTable from '@material-table/core';
 import { ThemeProvider } from '@mui/material/styles';
+import Chip from '@mui/material/Chip';
 import { Tooltip } from '@mui/material';
 import PropTypes from 'prop-types';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -24,6 +25,20 @@ import LeaveApprovalTimelineModal, {
 import LeaveRequestUploadDocumentModal, {
 	type LeaveRequestUploadContext,
 } from './LeaveRequestUploadDocumentModal';
+import LeaveRequestViewDocumentsModal, {
+	type LeaveRequestViewDocumentsContext,
+} from './LeaveRequestViewDocumentsModal';
+import {
+	hasLeaveDocuments,
+	resolveLeaveDocumentsFromRow,
+} from './leaveRequestDocuments';
+import LeaveRequestsTodaySummary from './LeaveRequestsTodaySummary';
+import { isPrivilegedToggleMode } from '../../../helpers/roleToggleUtils';
+
+export type LeaveTypeTableFilter = {
+	id: number;
+	name: string;
+};
 
 function leaveRequestRowStatus(row: any): string | undefined {
 	return (
@@ -35,18 +50,35 @@ function leaveRequestRowStatus(row: any): string | undefined {
 	);
 }
 
-const LeaveRequests = ({ tableRef, urlBackup,editModalToggle }: any) => {
+type LeaveRequestsProps = {
+	tableRef: React.MutableRefObject<any>;
+	urlBackup: React.MutableRefObject<string>;
+	editModalToggle: (id: any) => void;
+	leaveTypeFilter?: LeaveTypeTableFilter | null;
+	onClearLeaveTypeFilter?: () => void;
+};
+
+const LeaveRequests = ({
+	tableRef,
+	urlBackup,
+	editModalToggle,
+	leaveTypeFilter = null,
+	onClearLeaveTypeFilter,
+}: LeaveRequestsProps) => {
 	const { userData } = useContext(AuthContext);
 	const accountToggle = useSelector((state: any) => state.authSlice?.account_toggle_button);
 	const mode = accountToggle === 'Self' ? 'Self' : 'Admin';
+	const isPrivilegedMode = isPrivilegedToggleMode(userData?.user_type, mode);
 	const isAdminMode = userData?.user_type === 'Admin' && mode === 'Admin';
 	const isSelfMode =
 		userData?.user_type === 'user' ||
 		(userData?.user_type === 'Admin' && mode === 'Self');
 	const userIdFilter = isSelfMode && userData?.id ? `user=${userData.id}` : '';
-	/** Accept/Reject only for company admins acting in admin console (not Self / user view) */
-	const showAdminAcceptReject =
-		userData?.user_type === 'Admin' && mode === 'Admin';
+	const leaveTypeFilterParam =
+		leaveTypeFilter?.id != null ? `leave_type=${leaveTypeFilter.id}` : '';
+	const scopeFilters = [userIdFilter, leaveTypeFilterParam].filter(Boolean).join('&');
+	/** Accept/Reject for Admin, Manager, and HR in privileged mode (not Self / user view) */
+	const showPrivilegedAcceptReject = isPrivilegedMode;
 
 	const [filterEnabled, setFilterEnabled] = useState(false);
 	const [pageSize, setPageSize] = useState(5);
@@ -59,15 +91,20 @@ const LeaveRequests = ({ tableRef, urlBackup,editModalToggle }: any) => {
 	);
 	const [uploadOpen, setUploadOpen] = useState(false);
 	const [uploadContext, setUploadContext] = useState<LeaveRequestUploadContext | null>(null);
+	const [viewDocsOpen, setViewDocsOpen] = useState(false);
+	const [viewDocsContext, setViewDocsContext] = useState<LeaveRequestViewDocumentsContext | null>(
+		null,
+	);
+	const [summaryRefreshKey, setSummaryRefreshKey] = useState(0);
 
 	const openApprovalTimeline = useCallback((rowData: any) => {
 		setTimelineContext({
+			leaveRequestId: rowData?.id,
 			employeeName: rowData?.user?.name,
 			leaveTypeName: rowData?.leave_type?.name,
 			fromDate: rowData?.from_date,
 			toDate: rowData?.to_date,
 			overallStatus: leaveRequestRowStatus(rowData),
-			approval_steps: Array.isArray(rowData?.approval_steps) ? rowData.approval_steps : [],
 		});
 		setTimelineOpen(true);
 	}, []);
@@ -82,22 +119,38 @@ const LeaveRequests = ({ tableRef, urlBackup,editModalToggle }: any) => {
 		setIsFormOpen(true);
 	}, []);
 
+	const leaveRequestDocuments = useCallback(
+		(rowData: any) => resolveLeaveDocumentsFromRow(rowData),
+		[],
+	);
+
+	const openViewDocuments = useCallback((rowData: any) => {
+		setViewDocsContext({
+			leaveRequestId: rowData?.id,
+			employeeName: rowData?.user?.name,
+			leaveTypeName: rowData?.leave_type?.name,
+			documents: leaveRequestDocuments(rowData),
+		});
+		setViewDocsOpen(true);
+	}, [leaveRequestDocuments]);
+
 	const openUploadDocument = useCallback((rowData: any) => {
 		setUploadContext({
 			id: rowData?.id,
 			employeeName: rowData?.user?.name,
 			leaveTypeName: rowData?.leave_type?.name,
-			documents:
-				rowData?.documents ??
-				rowData?.attachments ??
-				(rowData?.document != null ? [rowData.document] : []),
 		});
 		setUploadOpen(true);
 	}, []);
 
 	const refreshTable = useCallback(() => {
 		tableRef?.current?.onQueryChange?.();
+		setSummaryRefreshKey((key) => key + 1);
 	}, [tableRef]);
+
+	useEffect(() => {
+		tableRef?.current?.onQueryChange?.();
+	}, [leaveTypeFilter, tableRef]);
 
 	const staticColumns = useMemo(
 		() => [
@@ -145,25 +198,15 @@ const LeaveRequests = ({ tableRef, urlBackup,editModalToggle }: any) => {
 					const status = leaveRequestRowStatus(rowData);
 					if (!status) return '----';
 					return (
-						<button
-							type='button'
-							className='btn btn-link p-0 border-0 text-decoration-none'
-							style={{ lineHeight: 1, cursor: 'pointer' }}
-							title='View approval status'
-							onClick={(e) => {
-								e.stopPropagation();
-								openApprovalTimeline(rowData);
-							}}>
-							<CustomBadge
-								color={statusColorCodes?.[String(status).toUpperCase()] || '#E4E4E4'}>
-								{status}
-							</CustomBadge>
-						</button>
+						<CustomBadge
+							color={statusColorCodes?.[String(status).toUpperCase()] || '#E4E4E4'}>
+							{status}
+						</CustomBadge>
 					);
 				},
 			},
 		],
-		[openApprovalTimeline],
+		[],
 	);
 	
 	const columns = useMemo(() => {
@@ -176,7 +219,7 @@ const LeaveRequests = ({ tableRef, urlBackup,editModalToggle }: any) => {
 			filtering: false,
 			render: (rowData: any) => (
 				<div className='d-flex flex-row flex-nowrap gap-1 justify-content-end align-items-center'>
-					{showAdminAcceptReject && (
+					{showPrivilegedAcceptReject && (
 						<AcceptandRejectBasedOnStatus
 							id={rowData.id}
 							tableRef={tableRef}
@@ -184,6 +227,34 @@ const LeaveRequests = ({ tableRef, urlBackup,editModalToggle }: any) => {
 							status={leaveRequestRowStatus(rowData) ?? ''}
 						/>
 					)}
+					<Tooltip arrow title='View approval status' placement='top'>
+						<Button
+							type='button'
+							color='warning'
+							isLight
+							size='sm'
+							icon='Visibility'
+							onClick={(e: React.MouseEvent) => {
+								e.stopPropagation();
+								openApprovalTimeline(rowData);
+							}}
+						/>
+					</Tooltip>
+					{hasLeaveDocuments(rowData) ? (
+						<Tooltip arrow title='View documents' placement='top'>
+							<Button
+								type='button'
+								color='success'
+								isLight
+								size='sm'
+								icon='Description'
+								onClick={(e: React.MouseEvent) => {
+									e.stopPropagation();
+									openViewDocuments(rowData);
+								}}
+							/>
+						</Tooltip>
+					) : null}
 					<Tooltip arrow title='Upload document' placement='top'>
 						<Button
 							type='button'
@@ -202,7 +273,15 @@ const LeaveRequests = ({ tableRef, urlBackup,editModalToggle }: any) => {
 			),
 		};
 		return [...staticColumns, actionColumn];
-	}, [staticColumns, showAdminAcceptReject, tableRef, handleEditModalToggle, openUploadDocument]);
+	}, [
+		staticColumns,
+		showPrivilegedAcceptReject,
+		tableRef,
+		handleEditModalToggle,
+		openUploadDocument,
+		openApprovalTimeline,
+		openViewDocuments,
+	]);
 
 	return (
 		<>
@@ -210,6 +289,12 @@ const LeaveRequests = ({ tableRef, urlBackup,editModalToggle }: any) => {
 				isOpen={timelineOpen}
 				setIsOpen={setTimelineOpen}
 				context={timelineContext}
+			/>
+			<LeaveRequestViewDocumentsModal
+				isOpen={viewDocsOpen}
+				setIsOpen={setViewDocsOpen}
+				context={viewDocsContext}
+				onDocumentsChanged={refreshTable}
 			/>
 			<LeaveRequestUploadDocumentModal
 				isOpen={uploadOpen}
@@ -226,11 +311,25 @@ const LeaveRequests = ({ tableRef, urlBackup,editModalToggle }: any) => {
 					id={editId}
 				/>
 			)}
+			{isPrivilegedMode ? (
+				<LeaveRequestsTodaySummary refreshKey={summaryRefreshKey} />
+			) : null}
 			<Card stretch>
 				<CardHeader>
-					<CardTitle tag='div' className='h6'>
-						Leave Requests
-					</CardTitle>
+					<div className='d-flex flex-wrap align-items-center gap-2'>
+						{/* <CardTitle tag='div' className='h6 mb-0'>
+							Leave Requests
+						</CardTitle> */}
+						{leaveTypeFilter ? (
+							<Chip
+								size='small'
+								label={`Leave type: ${leaveTypeFilter.name}`}
+								onDelete={onClearLeaveTypeFilter}
+								color='primary'
+								variant='outlined'
+							/>
+						) : null}
+					</div>
 					<CardActions>
 						{!isAdminMode && <AddButton name='Add Leave Request' modalShow={openAddModal} />}
 					</CardActions>
@@ -258,7 +357,7 @@ const LeaveRequests = ({ tableRef, urlBackup,editModalToggle }: any) => {
 										: `&ordering=${String(query.orderBy?.field)}`;
 							}
 
-							const url = `/api/hr/leave-requests?${userIdFilter}&limit=${query.pageSize}&offset=${
+							const url = `/api/hr/leave-requests?${scopeFilters ? `${scopeFilters}&` : ''}limit=${query.pageSize}&offset=${
 								query.pageSize * query.page
 							}&search=${query.search}${orderBy}&${otherFilters}`;
 
@@ -315,6 +414,11 @@ LeaveRequests.propTypes = {
 	tableRef: PropTypes.object.isRequired,
 	urlBackup: PropTypes.object.isRequired,
 	editModalToggle: PropTypes.func.isRequired,
+	leaveTypeFilter: PropTypes.shape({
+		id: PropTypes.number.isRequired,
+		name: PropTypes.string.isRequired,
+	}),
+	onClearLeaveTypeFilter: PropTypes.func,
 };
 /* eslint-enable react/forbid-prop-types */
 

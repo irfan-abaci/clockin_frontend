@@ -4,11 +4,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/icon/Icon';
 import AuthContext from '../../contexts/authContext';
+import {
+	canUseRoleToggle,
+	getPrivilegedToggleLabel,
+	getUserHomePath,
+} from '../../helpers/roleToggleUtils';
 import { updateToggleButton } from '../../store/auth';
 
-const USER_SELF_HOME = '/dashboard';
+const USER_SELF_HOME = getUserHomePath();
 const adminLandingByRole: Record<string, string> = {
 	Admin: '/',
+	Manager: '/',
+	HR: '/',
 	user: '/',
 };
 
@@ -19,17 +26,18 @@ const ToggleButton = () => {
 	const togglerButton = useSelector((state: any) => state.authSlice.account_toggle_button);
 	const mode = togglerButton || 'Admin';
 	const role = userData?.user_type || 'Admin';
+	const privilegedLabel = getPrivilegedToggleLabel(role);
 
-	const isAdminUser = userData?.user_type === 'Admin';
+	const showRoleToggle = canUseRoleToggle(userData?.user_type);
 
 	useEffect(() => {
-		if (!isAdminUser) return;
+		if (!showRoleToggle) return;
 		if (mode !== 'Self' && mode !== 'Admin') {
 			dispatch(updateToggleButton('Admin'));
 		}
-	}, [dispatch, isAdminUser, mode]);
+	}, [dispatch, showRoleToggle, mode]);
 
-	if (!isAdminUser) {
+	if (!showRoleToggle) {
 		return null;
 	}
 
@@ -67,7 +75,7 @@ const ToggleButton = () => {
 					<span className={classNames('role-switch-option-icon', { 'is-active': !isSelf })}>
 						<Icon icon='AdminPanelSettings' size='lg' />
 					</span>
-					<span className='role-switch-option-label'>Admin</span>
+					<span className='role-switch-option-label'>{privilegedLabel}</span>
 				</button>
 			</div>
 		</div>

@@ -50,6 +50,22 @@ const GroupFields = ({
 			</div>
 
 			<div className='col-12'>
+				<FormGroup label='Priority *'>
+					<input
+						type='number'
+						className='form-control'
+						min='0'
+						{...register('priority_choice_number', { required: true, valueAsNumber: true })}
+					/>
+					{errors?.priority_choice_number?.type === 'required' ? (
+						<span style={{ color: 'red' }}>*This field is required</span>
+					) : (
+						<p />
+					)}
+				</FormGroup>
+			</div>
+
+			<div className='col-12'>
 				<ReactSelectComponent
 					control={control}
 					name='Parent Group'

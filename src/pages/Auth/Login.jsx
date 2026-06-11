@@ -18,6 +18,7 @@ import loginBackground from '../../assets/Home.jpg';
 import { setLogOut } from '../../store/auth';
 import validateEmail from '../../helpers/emailValidator';
 import AbaciLoader from '../../components/AbaciLoader/AbaciLoader';
+import { getHomePathForUserType } from '../../helpers/roleToggleUtils';
 import PageWrapper from '../../layout/PageWrapper/PageWrapper';
 import Page from '../../layout/Page/Page';
 
@@ -36,7 +37,7 @@ const Login = () => {
 			if (Object.keys(userData).length === 0) {
 				setTimeout(() => setIsLoading(false), 2000);
 			} else {
-				navigate('/');
+				navigate(getHomePathForUserType(userData?.user_type));
 			}
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -100,7 +101,7 @@ const Login = () => {
 				setUser(userPayload?.email ?? values.loginUsername);
 				setUserData({ ...userPayload });
 				setWaitingForAxios(false);
-				navigate('/');
+				navigate(getHomePathForUserType(userPayload?.user_type));
 
 				// setIsLoading(false);
 				// updateToken(response.data?.tenants[0]);

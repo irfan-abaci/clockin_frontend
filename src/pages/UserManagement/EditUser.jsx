@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { Form } from 'reactstrap';
 import { useForm } from 'react-hook-form';
@@ -69,6 +69,25 @@ const resolveScheduleId = (user) => {
 	return null;
 };
 
+/** All schedule ids on the account (for remove_schedules on patch). */
+const resolveScheduleIds = (user) => {
+	const ids = [];
+	const arr = user?.schedules;
+	if (Array.isArray(arr)) {
+		arr.forEach((item) => {
+			const raw =
+				item != null && typeof item === 'object'
+					? item.id ?? item.pk ?? item.schedule_id
+					: item;
+			const n = Number(raw);
+			if (!Number.isNaN(n) && !ids.includes(n)) ids.push(n);
+		});
+	}
+	if (ids.length) return ids;
+	const single = resolveScheduleId(user);
+	return single != null ? [single] : [];
+};
+
 const buildFormValuesFromAccount = (user, scheduleOptions, reportingOpts, hrOpts, roleOpts) => {
 	const scheduleId = resolveScheduleId(user);
 	const schedule =
@@ -113,7 +132,7 @@ const appendFormField = (formData, key, value) => {
 	}
 };
 
-const buildAccountFormData = (data, image) => {
+const buildAccountFormData = (data, image, initialScheduleIds = []) => {
 	const formData = new FormData();
 
 	appendFormField(formData, 'email', data?.email);
@@ -134,8 +153,21 @@ const buildAccountFormData = (data, image) => {
 	appendFormField(formData, 'reporting_manager', data?.reporting_manager?.value);
 	appendFormField(formData, 'hr_manager', data?.hr_manager?.value);
 
-	if (data?.schedule?.value != null && data?.schedule?.value !== '') {
-		formData.append('schedules', String(Number(data.schedule.value)));
+	const selectedScheduleId =
+		data?.schedule?.value != null && data?.schedule?.value !== ''
+			? Number(data.schedule.value)
+			: null;
+
+	(initialScheduleIds || []).forEach((id) => {
+		const n = Number(id);
+		if (Number.isNaN(n)) return;
+		if (selectedScheduleId == null || selectedScheduleId !== n) {
+			formData.append('remove_schedules', String(n));
+		}
+	});
+
+	if (selectedScheduleId != null && !Number.isNaN(selectedScheduleId)) {
+		formData.append('schedules', String(selectedScheduleId));
 	}
 
 	if (data?.is_delete_image) {
@@ -172,6 +204,7 @@ const EditUser = ({ isOpen, setIsOpen, tableRef, userId, title }) => {
 	const [hrManagerOptions, setHrManagerOptions] = useState([]);
 	const [scheduleOptions, setScheduleOptions] = useState([]);
 	const [roleOptions, setRoleOptions] = useState([]);
+	const initialScheduleIdsRef = useRef([]);
 	const { userData } = useContext(AuthContext);
 
 	useEffect(() => {
@@ -255,6 +288,7 @@ const EditUser = ({ isOpen, setIsOpen, tableRef, userId, title }) => {
 
 				const user = userRes?.data;
 				if (user) {
+					initialScheduleIdsRef.current = resolveScheduleIds(user);
 					reset(buildFormValuesFromAccount(user, schedOpts, reportingOpts, hrOpts, roleOpts));
 					setImage(resolveUserAvatarSource(user));
 				}
@@ -274,7 +308,7 @@ const EditUser = ({ isOpen, setIsOpen, tableRef, userId, title }) => {
 
 	const onSubmit = (data) => {
 		setwaitingForAxios(true);
-		const formData = buildAccountFormData(data, image);
+		const formData = buildAccountFormData(data, image, initialScheduleIdsRef.current);
 		authAxiosFileUpload
 			.patch(`api/hr/accounts/${userId}/`, formData)
 			.then(() => {

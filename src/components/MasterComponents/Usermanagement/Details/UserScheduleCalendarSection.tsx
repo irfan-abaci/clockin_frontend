@@ -1,8 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import dayjs from 'dayjs';
 import Card, { CardBody, CardHeader, CardLabel, CardTitle } from '../../../bootstrap/Card';
 import ReusableScheduleCalendar from '../../ScheduleComponent/ReusableScheduleCalendar';
 import UserCalendarDetailModal from './UserCalendarDetailModal';
+import { authAxios } from '../../../../axiosInstance';
+import useToasterNotification from '../../../../hooks/useToasterNotification';
 
 const dayKey = (d: Date) => dayjs(d).format('YYYY-MM-DD');
 
@@ -22,6 +24,23 @@ const UserScheduleCalendarSection = ({
 	const [dayDetail, setDayDetail] = useState<any | null>(null);
 	const [dayDetailLoading, setDayDetailLoading] = useState(false);
 	const activeDetailDayKeyRef = useRef<string | null>(null);
+	const { showErrorNotification } = useToasterNotification();
+
+	const refreshDayDetail = useCallback(async () => {
+		if (!selectedDay || userId == null || userId === '') return;
+		try {
+			const res = await authAxios.get('/api/hr/attendance/calendar-detail/', {
+				params: {
+					calendar_type: 'user',
+					user: userId,
+					date: dayKey(selectedDay),
+				},
+			});
+			setDayDetail(res?.data ?? null);
+		} catch (err) {
+			showErrorNotification(err);
+		}
+	}, [selectedDay, userId, showErrorNotification]);
 
 	const handleModalOpenChange = (open: boolean) => {
 		setDayModalOpen(open);
@@ -65,7 +84,7 @@ const UserScheduleCalendarSection = ({
 				<ReusableScheduleCalendar
 					calendarType='user'
 					entityId={userId}
-					height='60vh'
+					height='75vh'
 					enableViewFilter
 					hideLoadingIndicator={hideLoadingIndicator}
 					onInitialLoadComplete={onInitialLoadComplete}
@@ -78,6 +97,7 @@ const UserScheduleCalendarSection = ({
 					userId={userId}
 					detail={dayDetail}
 					loading={dayDetailLoading}
+					onUserUpdated={refreshDayDetail}
 				/>
 			</CardBody>
 		</Card>

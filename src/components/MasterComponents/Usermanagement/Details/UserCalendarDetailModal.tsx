@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import dayjs from 'dayjs';
 import Chip from '@mui/material/Chip';
 import Select from 'react-select';
@@ -14,7 +15,9 @@ import CommentIcon from '@mui/icons-material/Comment';
 import { useSelector } from 'react-redux';
 import AuthContext from '../../../../contexts/authContext';
 import AcceptAndRejectButton from '../../../CustomComponent/Buttons/AcceptAndRejectButton';
-import { authAxios } from '../../../../axiosInstance';
+import { authAxios, authAxiosFileUpload } from '../../../../axiosInstance';
+import { buildLeaveRequestFormData } from '../../../../pages/LeaveManagement/LeaveRequest/AddLeaveRequest';
+import LeaveRequestField from '../../../../pages/LeaveManagement/LeaveRequest/LeaveRequestField';
 import useToasterNotification from '../../../../hooks/useToasterNotification';
 import useSelectStyles from '../../../../hooks/useSelectStyle';
 import { buttonColor } from '../../../../helpers/constants';
@@ -50,9 +53,31 @@ type CommandItem = {
 	id: number;
 	command: string;
 	user: number;
-	command_by?: number;
+	command_by?: number | Record<string, unknown> | string;
 	schedule_date: string;
 	command_datetime: string;
+};
+
+const formatCommandAuthor = (commandBy: unknown): string | null => {
+	if (commandBy == null || commandBy === '') return null;
+	if (typeof commandBy === 'string') {
+		const s = commandBy.trim();
+		return s || null;
+	}
+	if (typeof commandBy === 'number' && !Number.isNaN(commandBy)) {
+		return `User #${commandBy}`;
+	}
+	if (typeof commandBy === 'object') {
+		const o = commandBy as Record<string, unknown>;
+		const first = String(o.first_name || '').trim();
+		const last = String(o.last_name || '').trim();
+		const full = [first, last].filter(Boolean).join(' ');
+		if (full) return full;
+		const email = String(o.email || '').trim();
+		if (email) return email;
+		if (o.id != null && o.id !== '') return `User #${o.id}`;
+	}
+	return null;
 };
 
 const MODAL_TABS: { id: ModalTab; label: string }[] = [
@@ -470,8 +495,6 @@ const UserCalendarDetailModal = ({
 		detail?.ot_summary ??
 		null;
 
-	const close = () => setIsOpen(false);
-
 	const [scheduleEditMode, setScheduleEditMode] = useState(false);
 	const [scheduleOptions, setScheduleOptions] = useState<{ label: string; value: number }[]>([]);
 	const [scheduleOptionsLoading, setScheduleOptionsLoading] = useState(false);
@@ -483,6 +506,108 @@ const UserCalendarDetailModal = ({
 		{ label: string; value: number } | null
 	>(null);
 	const [scheduleSaving, setScheduleSaving] = useState(false);
+	const [leaveApplyMode, setLeaveApplyMode] = useState(false);
+	const [leaveApplySaving, setLeaveApplySaving] = useState(false);
+	const [leaveTypesLoading, setLeaveTypesLoading] = useState(false);
+	const [leaveTypeOptions, setLeaveTypeOptions] = useState<{ label: string; value: number }[]>([]);
+
+	const {
+		register: leaveRegister,
+		handleSubmit: handleLeaveSubmit,
+		control: leaveControl,
+		getValues: leaveGetValues,
+		setValue: leaveSetValue,
+		watch: leaveWatch,
+		reset: leaveReset,
+		formState: { errors: leaveErrors },
+	} = useForm({
+		defaultValues: {
+			leave_type: null as { label: string; value: number } | null,
+			from_date: '',
+			to_date: '',
+			from_session: null as { label: string; value: string } | null,
+			to_session: null as { label: string; value: string } | null,
+			reason: '',
+		},
+	});
+
+	const canApplyLeave =
+		!attendanceDeleted &&
+		Boolean(userId) &&
+		Boolean(apiDate) &&
+		(isAdmin || Number(userData?.id) === Number(userId));
+
+	const close = () => setIsOpen(false);
+
+	useEffect(() => {
+		if (!isOpen) {
+			setLeaveApplyMode(false);
+		}
+	}, [isOpen]);
+
+	useEffect(() => {
+		if (!leaveApplyMode || !isOpen) return undefined;
+		let cancelled = false;
+		setLeaveTypesLoading(true);
+		authAxios
+			.get('/api/hr/leave-types/?paginate=off')
+			.then((res) => {
+				if (cancelled) return;
+				const list = Array.isArray(res?.data) ? res.data : res?.data?.results || [];
+				setLeaveTypeOptions(
+					list.map((item: any) => ({
+						label: item?.name || item?.code || `Leave Type ${item?.id}`,
+						value: item?.id,
+					})),
+				);
+			})
+			.catch((err) => {
+				if (!cancelled) showErrorNotification(err);
+			})
+			.finally(() => {
+				if (!cancelled) setLeaveTypesLoading(false);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [leaveApplyMode]);
+
+	const openLeaveApply = () => {
+		const day = apiDate || dayjs().format('YYYY-MM-DD');
+		leaveReset({
+			leave_type: null,
+			from_date: day,
+			to_date: day,
+			from_session: { label: 'FULL', value: 'FULL' },
+			to_session: { label: 'FULL', value: 'FULL' },
+			reason: '',
+		});
+		setLeaveApplyMode(true);
+	};
+
+	const submitLeaveApplication = (data: any) => {
+		if (!userId) {
+			showErrorNotification('Missing user id');
+			return;
+		}
+		setLeaveApplySaving(true);
+		const formData = buildLeaveRequestFormData(data);
+		const targetUserId = Number(userId);
+		const isForOtherUser =
+			!Number.isNaN(targetUserId) && Number(userData?.id) !== targetUserId;
+		if (isForOtherUser) {
+			formData.append('user', String(targetUserId));
+		}
+		authAxiosFileUpload
+			.post('/api/hr/leave-requests/', formData)
+			.then(() => {
+				showSuccessNotification('Leave request submitted');
+				setLeaveApplyMode(false);
+				onUserUpdated?.();
+			})
+			.catch(showErrorNotification)
+			.finally(() => setLeaveApplySaving(false));
+	};
 
 	const [specialPeriodsList, setSpecialPeriodsList] = useState<any[]>([]);
 	const [specialPeriodsLoading, setSpecialPeriodsLoading] = useState(false);
@@ -857,14 +982,19 @@ const UserCalendarDetailModal = ({
 	const formatSpecialPeriodLabel = (sp: any) =>
 		sp?.name || sp?.title || sp?.label || (sp?.id != null ? `Period ${sp.id}` : 'Special period');
 
+	const leaveApplyModalTitle = apiDate
+		? `Apply for leave — ${dayjs(apiDate).format('MMM D, YYYY')}`
+		: 'Apply for leave';
+
 	return (
-		<Modal
-			isOpen={isOpen}
-			setIsOpen={setIsOpen}
-			size='lg'
-			isScrollable
-			isCentered
-			isStaticBackdrop>
+		<>
+			<Modal
+				isOpen={isOpen}
+				setIsOpen={setIsOpen}
+				size='lg'
+				isScrollable
+				isCentered
+				isStaticBackdrop>
 			<ModalHeader className='p-0 user-calendar-day-modal-header' setIsOpen={setIsOpen}>
 				<div className='w-100'>
 					<div className='px-4 pt-4 pb-1 pe-5'>
@@ -1048,13 +1178,19 @@ const UserCalendarDetailModal = ({
 								<div className='row g-3'>
 									<div className='col-12 col-md-6'>
 										<div className='p-3 rounded-3 border h-100 bg-white shadow-sm'>
-											<div className='d-flex justify-content-between mb-2'>
+											<div className='d-flex justify-content-between align-items-center mb-2'>
 												<div className='fw-semibold text-warning'>
 													<HistoryToggleOffIcon fontSize='small' /> Leave
 												</div>
-												<Button size='sm' color='secondary' isLight>
-													+ Apply
-												</Button>
+												{canApplyLeave && (
+													<Button
+														size='sm'
+														color='secondary'
+														isLight
+														onClick={openLeaveApply}>
+														+ Apply
+													</Button>
+												)}
 											</div>
 											{attendanceStatusLabel ? (
 												<div className='d-flex align-items-center gap-2 mb-2'>
@@ -1083,9 +1219,9 @@ const UserCalendarDetailModal = ({
 																		{lr?.from_date} → {lr?.to_date}
 																	</div>
 																</div>
-																{isAdmin && (
+																{isAdmin && lr?.id != null && (
 																	<AcceptAndRejectButton
-																		id={detail?.id}
+																		id={lr.id}
 																		tableRef={null}
 																		url='api/hr/leave-requests'
 																	/>
@@ -1102,13 +1238,8 @@ const UserCalendarDetailModal = ({
 
 									<div className='col-12 col-md-6'>
 										<div className='p-3 rounded-3 border h-100 bg-white shadow-sm'>
-											<div className='d-flex justify-content-between mb-2'>
-												<div className='fw-semibold text-warning'>
-													<AccessTimeIcon fontSize='small' /> Overtime
-												</div>
-												<Button size='sm' color='secondary' isLight>
-													+ Add
-												</Button>
+											<div className='fw-semibold text-warning mb-2'>
+												<AccessTimeIcon fontSize='small' /> Overtime
 											</div>
 											{otMinutes > 0 && (
 												<div className='small mb-2'>
@@ -1223,21 +1354,24 @@ const UserCalendarDetailModal = ({
 									<div className='text-muted small mb-3'>No comments for this day.</div>
 								) : (
 									<ul className='list-unstyled mb-3 d-flex flex-column gap-2'>
-										{commands.map((cmd) => (
-											<li
-												key={cmd.id}
-												className='border rounded-2 p-3 bg-light'>
-												<div className='fw-semibold'>{cmd.command}</div>
-												<div className='text-muted small mt-1'>
-													{cmd.command_datetime
-														? dayjs(cmd.command_datetime).format('MMM D, YYYY h:mm A')
-														: '—'}
-													{cmd.command_by != null && (
-														<span className='ms-2'>· By user {cmd.command_by}</span>
-													)}
-												</div>
-											</li>
-										))}
+										{commands.map((cmd) => {
+											const authorLabel = formatCommandAuthor(cmd.command_by);
+											return (
+												<li
+													key={cmd.id}
+													className='border rounded-2 p-3 bg-light'>
+													<div className='fw-semibold'>{cmd.command}</div>
+													<div className='text-muted small mt-1'>
+														{cmd.command_datetime
+															? dayjs(cmd.command_datetime).format('MMM D, YYYY h:mm A')
+															: '—'}
+														{authorLabel && (
+															<span className='ms-2'>· By {authorLabel}</span>
+														)}
+													</div>
+												</li>
+											);
+										})}
 									</ul>
 								)}
 								{isAdmin && (
@@ -1274,7 +1408,51 @@ const UserCalendarDetailModal = ({
 					Close
 				</Button>
 			</ModalFooter>
-		</Modal>
+			</Modal>
+
+			<Modal
+				isOpen={leaveApplyMode}
+				setIsOpen={setLeaveApplyMode}
+				size='lg'
+				isScrollable
+				isCentered>
+				<ModalHeader className='p-4' setIsOpen={setLeaveApplyMode}>
+					<ModalTitle id='user-calendar-leave-apply'>{leaveApplyModalTitle}</ModalTitle>
+				</ModalHeader>
+				<ModalBody className='px-4 pb-2'>
+					{leaveTypesLoading ? (
+						<CustomSpinner />
+					) : (
+						<form id='user-calendar-leave-apply-form' onSubmit={handleLeaveSubmit(submitLeaveApplication)}>
+							<LeaveRequestField
+								register={leaveRegister}
+								errors={leaveErrors}
+								control={leaveControl}
+								getValues={leaveGetValues}
+								setValue={leaveSetValue}
+								watch={leaveWatch}
+								leaveTypeOptions={leaveTypeOptions}
+							/>
+						</form>
+					)}
+				</ModalBody>
+				<ModalFooter className='px-4 pb-4'>
+					<Button
+						color='secondary'
+						isLight
+						isDisable={leaveApplySaving}
+						onClick={() => setLeaveApplyMode(false)}>
+						Cancel
+					</Button>
+					<Button
+						color='dark'
+						isDisable={leaveApplySaving || leaveTypesLoading}
+						onClick={handleLeaveSubmit(submitLeaveApplication)}>
+						{leaveApplySaving ? 'Submitting…' : 'Submit'}
+					</Button>
+				</ModalFooter>
+			</Modal>
+		</>
 	);
 };
 
