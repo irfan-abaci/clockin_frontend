@@ -57,7 +57,7 @@ const AddGroupsModal = ({
 		let cancelled = false;
 		setLoading(true);
 		authAxios
-			.get('api/hr/groups?paginate=off')
+			.get('api/hr/groups/?paginate=off')
 			.then((res) => {
 				if (cancelled) return;
 				const list = Array.isArray(res.data) ? res.data : res.data?.results || [];

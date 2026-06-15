@@ -68,8 +68,8 @@ const AddLeaveType = ({ isOpen, setIsOpen, tableRef, title, id }: any) => {
 	useEffect(() => {
 		if (!isOpen) return;
 		setIsLoading(true);
-		const groupsReq = authAxios.get('api/hr/groups?paginate=off');
-		const leaveTypesListReq = authAxios.get('api/hr/leave-types?paginate=off');
+		const groupsReq = authAxios.get('api/hr/groups/?paginate=off');
+		const leaveTypesListReq = authAxios.get('api/hr/leave-types/?paginate=off');
 		const leaveTypeReq = isEdit ? authAxios.get(`/api/hr/leave-types/${id}/`) : Promise.resolve(null);
 
 		Promise.all([groupsReq, leaveTypesListReq, leaveTypeReq])

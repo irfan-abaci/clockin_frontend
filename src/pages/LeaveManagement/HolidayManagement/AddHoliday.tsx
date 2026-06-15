@@ -35,7 +35,7 @@ const AddHoliday = ({ isOpen, setIsOpen, tableRef, title, id }: any) => {
 	useEffect(() => {
 		if (!isOpen) return;
 		setIsLoading(true);
-		const groupsReq = authAxios.get('api/hr/groups?paginate=off');
+		const groupsReq = authAxios.get('api/hr/groups/?paginate=off');
 		const holidayReq = isEdit ? authAxios.get(`/api/hr/public-holidays/${id}/`) : Promise.resolve(null);
 
 		Promise.all([groupsReq, holidayReq])

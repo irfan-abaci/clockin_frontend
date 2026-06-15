@@ -106,7 +106,7 @@ const AddMembersModal = ({ isOpen, setIsOpen, groupId, onAdded }: AddMembersModa
 		let cancelled = false;
 		setLoading(true);
 		authAxios
-			.get('api/hr/accounts', { params: { paginate: 'off' } })
+			.get('api/hr/accounts/', { params: { paginate: 'off' } })
 			.then((res) => {
 				if (cancelled) return;
 				const list = Array.isArray(res.data) ? res.data : res.data?.results || [];

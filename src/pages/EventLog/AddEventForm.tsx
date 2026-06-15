@@ -122,7 +122,7 @@ const AddEventForm = ({ isOpen, setIsOpen, tableRef, title }: any) => {
 		setIsLoading(true);
 
 		authAxios
-			.get('api/hr/accounts', { params: { paginate: 'off' } })
+			.get('api/hr/accounts/', { params: { paginate: 'off' } })
 			.then((res) => {
 				if (cancelled) return;
 				const raw = res?.data;

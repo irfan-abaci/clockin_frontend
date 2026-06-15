@@ -111,7 +111,7 @@ const SpecialDaysTable = ({ tableRef, urlBackup, editModalToggle }: any) => {
 										? `&ordering=-${String(query.orderBy?.field)}`
 										: `&ordering=${String(query.orderBy?.field)}`;
 							}
-							const url = `/api/hr/special-periods?limit=${query.pageSize}&offset=${
+							const url = `/api/hr/special-periods/?limit=${query.pageSize}&offset=${
 								query.pageSize * query.page
 							}&search=${query.search}${orderBy}&${otherFilters}`;
 							urlBackup.current = url;

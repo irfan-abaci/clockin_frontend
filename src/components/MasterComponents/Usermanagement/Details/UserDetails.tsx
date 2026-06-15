@@ -74,7 +74,7 @@ const UserDetails = ({
 		let cancelled = false;
 		setIsUserLoading(true);
 		authAxios
-			.get(`/api/hr/accounts/${resolvedUserId}`)
+			.get(`/api/hr/accounts/${resolvedUserId}/`)
 			.then((response) => {
 				if (!cancelled) setUser(response?.data || null);
 			})

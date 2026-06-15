@@ -47,10 +47,10 @@ const AddGroup = ({ isOpen, setIsOpen, tableRef, title, id }: any) => {
 
 		setIsLoading(true);
 
-		const groupsReq = authAxios.get('api/hr/groups?paginate=off');
-		const usersReq = authAxios.get('api/hr/accounts?paginate=off');
-		const schedulesReq = authAxios.get('api/hr/schedules?paginate=off');
-		const sitesReq = authAxios.get('api/hr/sites?paginate=off');
+		const groupsReq = authAxios.get('api/hr/groups/?paginate=off');
+		const usersReq = authAxios.get('api/hr/accounts/?paginate=off');
+		const schedulesReq = authAxios.get('api/hr/schedules/?paginate=off');
+		const sitesReq = authAxios.get('api/hr/sites/?paginate=off');
 		const leaveTypesReq = authAxios.get('/api/hr/leave-types/?paginate=off');
 		const groupReq = isEdit ? authAxios.get(`api/hr/groups/${id}`) : Promise.resolve(null);
 

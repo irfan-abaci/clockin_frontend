@@ -52,7 +52,7 @@ const AddUsers = ({ isOpen, setIsOpen, tableRef, title }) => {
 	useEffect(() => {
 		if (!isOpen) return;
 		authAxios
-			.get('api/hr/groups?paginate=off')
+			.get('api/hr/groups/?paginate=off')
 			.then((res) => {
 				const options =
 					res?.data?.map((item) => ({
@@ -64,7 +64,7 @@ const AddUsers = ({ isOpen, setIsOpen, tableRef, title }) => {
 			.catch(() => setGroupOptions([]));
 
 		authAxios
-			.get('api/hr/sites?paginate=off')
+			.get('api/hr/sites/?paginate=off')
 			.then((res) => {
 				const options =
 					res?.data?.map((item) => ({
@@ -76,7 +76,7 @@ const AddUsers = ({ isOpen, setIsOpen, tableRef, title }) => {
 			.catch(() => setSiteOptions([]));
 
 		authAxios
-			.get('api/hr/schedules?paginate=off')
+			.get('api/hr/schedules/?paginate=off')
 			.then((res) => {
 				const raw = Array.isArray(res?.data) ? res.data : res?.data?.results || [];
 				const options =
@@ -115,10 +115,10 @@ const AddUsers = ({ isOpen, setIsOpen, tableRef, title }) => {
 					value: item?.id,
 				}));
 		Promise.all([
-			authAxios.get('api/hr/accounts', {
+			authAxios.get('api/hr/accounts/', {
 				params: { ...accountsParams, user_type__role_name: 'Manager' },
 			}),
-			authAxios.get('api/hr/accounts', {
+			authAxios.get('api/hr/accounts/', {
 				params: { ...accountsParams, user_type__role_name: 'HR' },
 			}),
 		])

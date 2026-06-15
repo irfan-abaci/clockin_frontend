@@ -318,7 +318,7 @@ const ScheduleCalendarDetailModal = ({
 		let cancelled = false;
 		setScheduleOptionsLoading(true);
 		authAxios
-			.get('api/hr/schedules?paginate=off')
+			.get('api/hr/schedules/?paginate=off')
 			.then((res: any) => {
 				if (cancelled) return;
 				const raw = Array.isArray(res?.data) ? res.data : res?.data?.results || [];

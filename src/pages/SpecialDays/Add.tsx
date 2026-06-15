@@ -57,7 +57,7 @@ const AddSpecialDay = ({ isOpen, setIsOpen, tableRef, title, id }: any) => {
 		if (!isOpen) return;
 		setIsLoading(true);
 
-		const shiftsReq = authAxios.get('api/hr/shifts?paginate=off');
+		const shiftsReq = authAxios.get('api/hr/shifts/?paginate=off');
 		const specialDayReq = isEdit ? authAxios.get(`api/hr/special-periods/${id}`) : Promise.resolve(null);
 
 		Promise.all([shiftsReq, specialDayReq])
