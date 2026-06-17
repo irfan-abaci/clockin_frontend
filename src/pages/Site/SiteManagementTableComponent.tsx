@@ -134,7 +134,7 @@ const SiteManagementTableComponent = (props) => {
 							// 	usersList='Admin,User,Superuser,Assistant User'
 							//  }
 							 
-							let url = `/api/hr/sites?limit=${
+							let url = `/api/hr/sites/?limit=${
 								query.pageSize
 							}&offset=${query.pageSize * query.page}&search=${query.search}${orderBy}&${otherFilters}`;
 							

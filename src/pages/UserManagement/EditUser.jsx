@@ -233,14 +233,14 @@ const EditUser = ({ isOpen, setIsOpen, tableRef, userId, title }) => {
 			try {
 				const [groupsRes, sitesRes, schedulesRes, rolesRes, reportingRes, hrRes, userRes] =
 					await Promise.all([
-						authAxios.get('api/hr/groups?paginate=off'),
-						authAxios.get('api/hr/sites?paginate=off'),
-						authAxios.get('api/hr/schedules?paginate=off'),
+						authAxios.get('api/hr/groups/?paginate=off'),
+						authAxios.get('api/hr/sites/?paginate=off'),
+						authAxios.get('api/hr/schedules/?paginate=off'),
 						authAxios.get('api/hr/roles/?paginate=off'),
-						authAxios.get('api/hr/accounts', {
+						authAxios.get('api/hr/accounts/', {
 							params: { ...accountsParams, user_type__role_name: 'Manager' },
 						}),
-						authAxios.get('api/hr/accounts', {
+						authAxios.get('api/hr/accounts/', {
 							params: { ...accountsParams, user_type__role_name: 'HR' },
 						}),
 						authAxios.get(`api/hr/accounts/${userId}/`),

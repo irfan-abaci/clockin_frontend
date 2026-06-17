@@ -32,16 +32,16 @@ const UserForm = ({ isOpen, setIsOpen, tableRef, id = null, title }) => {
 	const [scheduleOptions, setScheduleOptions] = useState([]);
 
 	useEffect(() => {
-		const sitesReq = authAxios.get('api/hr/sites?paginate=off');
+		const sitesReq = authAxios.get('api/hr/sites/?paginate=off');
 		const userReq = id ? authAxios.get(`api/hr/users/${id}`) : Promise.resolve(null);
 		const accountsParams = { paginate: 'off' };
-		const reportingManagersReq = authAxios.get('api/hr/accounts', {
+		const reportingManagersReq = authAxios.get('api/hr/accounts/', {
 			params: { ...accountsParams, user_type__role_name: 'Manager' },
 		});
-		const hrManagersReq = authAxios.get('api/hr/accounts', {
+		const hrManagersReq = authAxios.get('api/hr/accounts/', {
 			params: { ...accountsParams, user_type__role_name: 'HR' },
 		});
-		const schedulesReq = authAxios.get('api/hr/schedules?paginate=off');
+		const schedulesReq = authAxios.get('api/hr/schedules/?paginate=off');
 
 		Promise.all([ sitesReq, userReq, reportingManagersReq, hrManagersReq, schedulesReq])
 			.then(([ sitesRes, userRes, reportingManagersRes, hrManagersRes, schedulesRes]) => {

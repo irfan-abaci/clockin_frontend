@@ -73,7 +73,7 @@ const Index = () => {
 					setIsOpen={setAddBulkModalShow}
 					tableRef={tableRef}
 					title='Bulk Upload'
-					api='api/hr/groups/group_csv_import_and_sample_csv_download'
+					api='api/hr/groups/group_csv_import_and_sample_csv_download/'
 					fileName='Groups.csv'
 
 				/>

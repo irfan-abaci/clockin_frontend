@@ -149,7 +149,7 @@ const ScheduleTableComponent = ({ tableRef, urlBackup, editModalToggle }: any) =
 										? `&ordering=-${String(query.orderBy?.field)}`
 										: `&ordering=${String(query.orderBy?.field)}`;
 							}
-							const url = `/api/hr/schedules?limit=${query.pageSize}&offset=${
+							const url = `/api/hr/schedules/?limit=${query.pageSize}&offset=${
 								query.pageSize * query.page
 							}&search=${query.search}${orderBy}&${otherFilters}`;
 

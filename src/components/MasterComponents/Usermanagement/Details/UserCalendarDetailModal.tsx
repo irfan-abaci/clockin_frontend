@@ -660,7 +660,7 @@ const UserCalendarDetailModal = ({
 		let cancelled = false;
 		setScheduleOptionsLoading(true);
 		authAxios
-			.get(`api/hr/schedules?paginate=off&date=${apiDate}`)
+			.get(`api/hr/schedules/?paginate=off&date=${apiDate}`)
 			.then((res: any) => {
 				if (cancelled) return;
 				const raw = Array.isArray(res?.data) ? res.data : res?.data?.results || [];
@@ -1223,7 +1223,7 @@ const UserCalendarDetailModal = ({
 																	<AcceptAndRejectButton
 																		id={lr.id}
 																		tableRef={null}
-																		url='api/hr/leave-requests'
+																		url='api/hr/leave-requests/'
 																	/>
 																)}
 															</div>
@@ -1274,7 +1274,7 @@ const UserCalendarDetailModal = ({
 																		<AcceptAndRejectButton
 																			id={otRequestId}
 																			tableRef={null}
-																			url='api/hr/overtime'
+																			url='api/hr/overtime/'
 																		/>
 																	</div>
 																)}
