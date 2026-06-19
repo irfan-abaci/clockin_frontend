@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import Cookies from 'js-cookie';
 import ProtectedRoute from './ProtectedRoute'; // Import ProtectedRoute
 import ErrorPage from '../../pages/PublicPages/ErrorPage';
 import Login from '../../pages/Auth/Login';
@@ -15,6 +16,14 @@ import AbaciLoader from '../../components/AbaciLoader/AbaciLoader';
 import RouteConfig from '../../routes/contentRoutes';
 import { getEffectiveUserTypeForRoutes, isPlatformAdmin, PLATFORM_ADMIN_HOME_PATH } from '../../helpers/roleToggleUtils';
 import { getDefaultAuthPath } from '../../helpers/baseURL';
+
+const isAuthenticatedUser = (userData: unknown) =>
+	Boolean(
+		userData !== null &&
+			typeof userData === 'object' &&
+			Object.keys(userData).length > 0 &&
+			Cookies.get('token'),
+	);
 
 
 const ContentRoutes = () => {
@@ -45,10 +54,13 @@ const ContentRoutes = () => {
     return <AbaciLoader />
   }
 
+  const authenticated = isAuthenticatedUser(userData);
+
   return (
     <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<Navigate to={getDefaultAuthPath()} replace />} />
+      {!authenticated && (
+        <Route path="/" element={<Navigate to={getDefaultAuthPath()} replace />} />
+      )}
       <Route path="/login" element={<Login />} />
       <Route path="/clockin-admin/login" element={<AdminLogin />} />
       <Route path="/signup" element={<Signup />} />
