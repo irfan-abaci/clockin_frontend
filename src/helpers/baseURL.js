@@ -1,6 +1,30 @@
+import Cookies from 'js-cookie';
+
 const isDev = () => !import.meta.env.MODE || import.meta.env.MODE === 'development';
 
 const stripQuotes = (value) => value?.replace(/^['"]|['"]$/g, '').trim();
+
+export const getDevTenantOverride = () =>
+	isDev() ? stripQuotes(import.meta.env.VITE_DEV_TENANT) || '' : '';
+
+export const getCurrentTenantId = () => {
+	const devTenant = getDevTenantOverride();
+	if (devTenant) return devTenant;
+
+	const rootDomain = getRootDomain();
+	const { hostname } = window.location;
+	if (hostname !== rootDomain && hostname.endsWith(`.${rootDomain}`)) {
+		return hostname.replace(`.${rootDomain}`, '');
+	}
+
+	const cookieTenant = Cookies.get('tenant');
+	return cookieTenant ? String(cookieTenant).trim() : '';
+};
+
+export const getTenantRequestHeaders = () => {
+	const tenantId = getCurrentTenantId();
+	return tenantId ? { 'X-Tenant-ID': tenantId } : {};
+};
 
 export const getRootDomain = () => {
 	const fromEnv = stripQuotes(import.meta.env.VITE_API_ROOT_DOMAIN);
@@ -17,6 +41,8 @@ export const getRootDomain = () => {
 const getOriginWithoutDevPort = () => window.location.origin.split(':3000')[0];
 
 export const isOnTenantSubdomain = () => {
+	if (getDevTenantOverride()) return true;
+
 	const rootDomain = getRootDomain();
 	const { hostname } = window.location;
 	return hostname !== rootDomain && hostname.endsWith(`.${rootDomain}`);
@@ -43,6 +69,10 @@ export const getSuperAdminBaseURL = () => {
 };
 
 export const getTenantApiBaseURL = (tenantSlug) => {
+	if (isDev() && getDevTenantOverride()) {
+		return getSuperAdminBaseURL();
+	}
+
 	if (!tenantSlug) return getSuperAdminBaseURL();
 
 	const normalizedSlug = String(tenantSlug).trim();
