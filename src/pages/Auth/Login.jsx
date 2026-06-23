@@ -37,7 +37,7 @@ const Login = ({
 	const [waitingForAxios, setWaitingForAxios] = useState(false);
 
 	useEffect(() => {
-		if (userData !== null && Object.keys(userData).length > 0) {
+		if (userData != null && Object.keys(userData).length > 0) {
 			navigate(getHomePathForUser(userData));
 		}
 	}, [userData, navigate]);
@@ -127,7 +127,7 @@ const Login = ({
 			});
 	};
 
-	if (userData === null) {
+	if (userData == null) {
 		return <AbaciLoader />;
 	}
 	return (

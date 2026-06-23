@@ -3,11 +3,22 @@ import { baseURL, getTenantApiBaseURL, getTenantRequestHeaders } from './helpers
 import { AxiosTimeout } from './helpers/constants';
 import Cookies from 'js-cookie';
 
+const TENANT_HEADER_EXCLUDED_PATHS = ['/users/admin/login'];
+ 
+const shouldSkipTenantHeader = (config) => {
+    const requestUrl = `${config?.baseURL || ''}${config?.url || ''}`;
+    return TENANT_HEADER_EXCLUDED_PATHS.some((path) => requestUrl.includes(path));
+};
+ 
 const attachTenantHeader = (instance) => {
-	instance.interceptors.request.use((config) => {
-		Object.assign(config.headers, getTenantRequestHeaders());
-		return config;
-	});
+    instance.interceptors.request.use((config) => {
+        if (shouldSkipTenantHeader(config)) {
+            return config;
+        }
+ 
+        Object.assign(config.headers, getTenantRequestHeaders());
+        return config;
+    });
 };
 
 export const publicAxios = axios.create({

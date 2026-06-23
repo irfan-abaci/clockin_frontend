@@ -20,6 +20,7 @@ import ContactNumberField from '../../components/CustomComponent/Fields/ContactN
 
 const MyProfile = () => {
 	const { userData, setUserData } = useContext(AuthContext);
+	console.log(userData);
 	const [waitingForAxios, setWaitingForAxios] = useState(false);
 	const {
 		register,
@@ -34,9 +35,9 @@ const MyProfile = () => {
 	useEffect(() => {
 		if (userData !== null) {
 			reset({
-				first_name: userData?.user_data?.first_name || '',
-				last_name: userData?.user_data?.last_name || '',
-				user_contact_phone: userData?.user_data?.user_contact_phone || '',
+				first_name: userData?.first_name || '',
+				last_name: userData?.last_name || '',
+				user_contact_phone: userData?.office_contact_number || '',
 				gender: userData?.gender ? { label: userData.gender, value: userData?.gender } : '',
 
 			})
@@ -48,21 +49,25 @@ const MyProfile = () => {
 	const saveHandler = (data) => {
 		const payload = {
 
-			user_data: {
+			
 				first_name: data.first_name,
 				last_name: data.last_name,
-				user_contact_phone: data.user_contact_phone,
-			},
+				office_contact_number: data.user_contact_phone,
+			
 			gender: data.gender.value
 
 		};
 		setWaitingForAxios(true);
-		const url = `api/users/${userData?.id}`;
+		const url = `api/users/profile/`;
 		authAxios
 			.patch(url, payload)
 			.then((res) => {
 				setWaitingForAxios(false);
-				setUserData(res.data);
+				const profileUser = res.data?.user ?? res.data;
+				setUserData((prev) => ({
+					...prev,
+					...(profileUser && typeof profileUser === 'object' ? profileUser : {}),
+				}));
 			})
 			.catch((error) => {
 				setWaitingForAxios(false);

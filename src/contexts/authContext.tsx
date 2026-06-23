@@ -34,7 +34,11 @@ const isPublicAuthPath = (pathname: string) =>
 
 export const AuthContextProvider: FC<IAuthContextProviderProps> = ({ children }) => {
 	const [user, setUser] = useState<string>('');
-	const [userData, setUserData] = useState<null | any>(null);
+	const [userData, setUserData] = useState<null | any>(() => {
+		if (typeof window === 'undefined') return null;
+		const path = window.location.pathname;
+		return isPublicAuthPath(path) && !Cookies.get('token') ? {} : null;
+	});
   const dispatch = useDispatch();
   const navigate=useNavigate()
   const location=useLocation()
@@ -71,9 +75,11 @@ const setLogOut = () => {
           const url = '/api/users/profile/';
           const response = await authAxios.get(url);
           const profileUser = response.data?.user ?? response.data;
-          setUser(profileUser?.email ?? response.data?.email);
+          const resolvedUser =
+            profileUser && typeof profileUser === 'object' ? profileUser : {};
+          setUser(profileUser?.email ?? response.data?.email ?? '');
           setUserData({
-            ...profileUser,
+            ...resolvedUser,
             is_platform_admin:
               response.data?.is_platform_admin ?? profileUser?.is_platform_admin ?? false,
           });
@@ -90,6 +96,8 @@ const setLogOut = () => {
     } else if (!Cookies.get('token')) {
       setUser('');
       setUserData({});
+    } else {
+      fetchData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

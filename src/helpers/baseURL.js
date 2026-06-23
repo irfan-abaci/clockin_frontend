@@ -48,7 +48,7 @@ export const isOnTenantSubdomain = () => {
 	return hostname !== rootDomain && hostname.endsWith(`.${rootDomain}`);
 };
 
-export const getDefaultAuthPath = () => (isOnTenantSubdomain() ? '/login' : '/signup');
+export const getDefaultAuthPath = () => '/signup';
 
 const isOnApiHost = () => {
 	const rootDomain = getRootDomain();

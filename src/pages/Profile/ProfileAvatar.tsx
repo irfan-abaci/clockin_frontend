@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Spinner } from 'reactstrap';
 import Card, {
 	CardBody,
@@ -8,10 +8,11 @@ import Profile from "../../assets/img/Avatar.svg"
 import AuthContext from '../../contexts/authContext';
 import ImageCropper from '../../helpers/imageCropper';
 import Icon from '../../components/icon/Icon';
-import { authAxios } from '../../axiosInstance';
+import { authAxiosFileUpload } from '../../axiosInstance';
 import Avatar from '../../components/Avatar';
+import base64toFile from '../../helpers/base64toFile';
 import useToasterNotification from '../../hooks/useToasterNotification';
-import useImageHandler from '../../hooks/useImageHandler';
+import useUserAvatarSrc from '../../hooks/useUserAvatarSrc';
 
 
 const ProfileAvatar = () => {
@@ -19,27 +20,36 @@ const ProfileAvatar = () => {
 	const [waitingForAxios, setWaitingForAxios] = useState(false)
 	const { userData, setUserData } = useContext(AuthContext);
 	const { showErrorNotification } = useToasterNotification()
-	const updateAvatar = (updateImage: any) => {
+	const updateAvatar = (croppedBase64: string) => {
+		setImage(croppedBase64);
 		setWaitingForAxios(true);
-		const url = `api/users/${userData?.id}`;
-		const payload = {
-			user_data: { user_image: updateImage }
-		}
-		authAxios
-			.patch(url, payload)
+
+		const formData = new FormData();
+		const blob = base64toFile(croppedBase64);
+		const file = new File([blob], 'avatar.png', { type: blob.type || 'image/png' });
+		formData.append('avatar', file);
+
+		authAxiosFileUpload
+			.patch('api/users/profile/', formData)
 			.then((res) => {
 				setWaitingForAxios(false);
-				setUserData((prev: any) => ({ ...prev, user_data: { ...prev.user_data, user_image: res.data.user_data.user_image } }))
+				setImage(null);
+				const profileUser = res.data?.user ?? res.data;
+				setUserData((prev: any) => ({
+					...prev,
+					...(profileUser && typeof profileUser === 'object' ? profileUser : {}),
+					is_platform_admin:
+						res.data?.is_platform_admin ??
+						profileUser?.is_platform_admin ??
+						prev?.is_platform_admin,
+				}));
 			})
 			.catch((error) => {
 				setWaitingForAxios(false);
-				setImage(null)
-				showErrorNotification(error)
-
+				setImage(null);
+				showErrorNotification(error);
 			});
-
-
-	}
+	};
 	const handleButtonClick = () => {
 		if (!waitingForAxios) {
 			const input = document.getElementById("customFile");
@@ -49,18 +59,8 @@ const ProfileAvatar = () => {
 		}
 
 	};
-	const getAvatarSrc = () => {
-		if (userData?.user_data?.user_image) {
-			return useImageHandler(userData?.user_data?.user_image, '') || Profile
-		}
-		if (image) {
-			return image;
-		}
-		return Profile;
-	};
-
-	// Use this function to get the source
-	const avatarSrc = getAvatarSrc();
+	const resolvedAvatarSrc = useUserAvatarSrc(userData, Profile);
+	const avatarSrc = image || resolvedAvatarSrc;
 
 
 
@@ -90,7 +90,7 @@ const ProfileAvatar = () => {
 				{/* eslint-enable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
 
 				<CardTitle tag='div' className='h2'>
-					{userData?.preferred_name || '----'}
+					{userData?.first_name + ' ' + userData?.last_name || '----'}
 				</CardTitle>
 				<h5>{userData?.email || '----'}</h5>
 

@@ -7,7 +7,7 @@ import urlMaker from '../../helpers/UrlMaker';
 import MainHeaderRight from './HeaderRight';
 import Avatar from '../../components/Avatar';
 import {  userTypesToCapital } from '../../helpers/constants';
-import useImageHandler from '../../hooks/useImageHandler';
+import useUserAvatarSrc from '../../hooks/useUserAvatarSrc';
 
 
 const MainHeader = () => {
@@ -21,7 +21,7 @@ const MainHeader = () => {
 	// };
 
 	// Use this function to get the source
-	const avatarSrc = useImageHandler(userData?.user_data?.user_image, '')|| ProfilePic;
+	const avatarSrc = useUserAvatarSrc(userData, ProfilePic);
 
 
 	return (

@@ -60,13 +60,13 @@ const ChangePassword = () => {
 	});
 	const changePasswordHandler = (data) => {
 		setWaitingForAxios(true);
-		const url = '/api/change_password';
+		const url = '/api/users/profile/';
 		const payload = {
 			current_password: data.currentPassword,
-			new_password: data.newPassword,
+			password: data.newPassword,
 		};
 		authAxios
-			.post(url, payload)
+			.patch(url, payload)
 			.then(() => {
 				setWaitingForAxios(false);
 				showNotification('Success', 'Your password has been updated !!', 'success');

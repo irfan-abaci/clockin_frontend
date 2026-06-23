@@ -240,7 +240,7 @@ const buildStatCards = (
 type MetricPill = { label: string; value: number; modifier?: string };
 
 const MetricPillsGrid = ({ pills }: { pills: MetricPill[] }) => (
-	<div className='row g-2'>
+	<div className='row g-2 mb-3'>
 		{pills.map(({ label, value, modifier }) => (
 			<div key={label} className='col-4'>
 				<div

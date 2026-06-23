@@ -14,7 +14,7 @@ import AuthContext from '../../contexts/authContext';
 import ThemeContext from '../../contexts/themeContext';
 import urlMaker from '../../helpers/UrlMaker';
 import ProfilePic from "../../assets/img/Avatar.svg"
-import useImageHandler from '../../hooks/useImageHandler';
+import useUserAvatarSrc from '../../hooks/useUserAvatarSrc';
 
 
 
@@ -47,7 +47,7 @@ const User = () => {
 	}
 
 
-	const avatarSrc = useImageHandler(userData?.user_data?.user_image, '')|| ProfilePic;
+	const avatarSrc = useUserAvatarSrc(userData, ProfilePic);
 
 	return (
 		<>
