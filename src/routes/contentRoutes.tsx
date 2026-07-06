@@ -30,19 +30,25 @@ const MAINROUTE={
 	Customers: lazy(() => import('../pages/PlatformAdmin/Customers/index')),
 	CustomerDetail: lazy(() => import('../pages/PlatformAdmin/Customers/CustomerDetails/CustomerDetailPage')),
 	Licenses: lazy(() => import('../pages/PlatformAdmin/Licenses/index')),
+	Partners: lazy(() => import('../pages/PlatformAdmin/Partners/index')),
+	PartnerDetail: lazy(() => import('../pages/PlatformAdmin/Partners/PartnerDetails/PartnerDetailPage')),
 }
 interface CustomRouteConfig {
 	path: string;
 	element: React.ReactNode;
-	allowedTo?: string[]; // Custom property for role-based access control
+	allowedTo?: string[]; 
 }
 
-/** Admin console roles — Manager shares the same page access as Admin. */
 const ADMIN_CONSOLE_ROLES = ['Admin', 'Manager', 'HR'];
-/** User role and Self toggle mode share the same self-service pages. */
 const SELF_MODE_USER_ROLE = 'user';
 const SELF_MODE_ROUTES = [...ADMIN_CONSOLE_ROLES, SELF_MODE_USER_ROLE];
 const PLATFORM_ADMIN_ROLES = ['platform_admin'];
+const PARTNER_ROLES = ['partner'];
+const ALL_AUTHENTICATED_ROLES = [
+	...SELF_MODE_ROUTES,
+	...PLATFORM_ADMIN_ROLES,
+	...PARTNER_ROLES,
+];
 
 const RouteConfig: CustomRouteConfig[] = [
 	{
@@ -53,7 +59,7 @@ const RouteConfig: CustomRouteConfig[] = [
 	{
 		path: pagesNotInSideBar.Profile.path,
 		element: <MAINROUTE.Profile/>,
-		allowedTo: ADMIN_CONSOLE_ROLES,
+		allowedTo: ALL_AUTHENTICATED_ROLES,
 	},
 	{
 		path: allRoutesObject.UserManagement.path,
@@ -158,16 +164,26 @@ const RouteConfig: CustomRouteConfig[] = [
 	{
 		path: allRoutesObject.Customers.path,
 		element: <MAINROUTE.Customers />,
-		allowedTo: PLATFORM_ADMIN_ROLES,
+		allowedTo: [...PLATFORM_ADMIN_ROLES, ...PARTNER_ROLES],
 	},
 	{
 		path: pagesNotInSideBar.CustomerDetails.path,
 		element: <MAINROUTE.CustomerDetail />,
-		allowedTo: PLATFORM_ADMIN_ROLES,
+		allowedTo: [...PLATFORM_ADMIN_ROLES, ...PARTNER_ROLES],
 	},
 	{
 		path: allRoutesObject.Licenses.path,
 		element: <MAINROUTE.Licenses />,
+		allowedTo: [...PLATFORM_ADMIN_ROLES, ...PARTNER_ROLES],
+	},
+	{
+		path: allRoutesObject.Partners.path,
+		element: <MAINROUTE.Partners />,
+		allowedTo: PLATFORM_ADMIN_ROLES,
+	},
+	{
+		path: pagesNotInSideBar.PartnerDetails.path,
+		element: <MAINROUTE.PartnerDetail />,
 		allowedTo: PLATFORM_ADMIN_ROLES,
 	},
 ]

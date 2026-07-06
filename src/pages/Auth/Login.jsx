@@ -14,6 +14,7 @@ import useDarkMode from '../../hooks/useDarkMode';
 import AuthContext from '../../contexts/authContext';
 import { publicAxios, updateToken } from '../../axiosInstance';
 import LogoForLogin from '../../assets/LogoForLogin.png';
+import ClockInLogoDark from '../../assets/ClockInLogoDark.png';
 import loginBackground from '../../assets/Home.jpg';
 import { setLogOut } from '../../store/auth';
 import validateEmail from '../../helpers/emailValidator';
@@ -85,15 +86,17 @@ const Login = ({
 					...userPayload,
 					is_platform_admin:
 						responseData?.is_platform_admin ?? userPayload?.is_platform_admin ?? false,
+					is_platform_partner: responseData?.is_platform_partner ?? userPayload?.is_platform_partner ?? false,
 				};
 				const isPlatformAdminUser = enrichedUser.is_platform_admin === true;
+				const isPlatformPartnerUser = enrichedUser.is_platform_partner === true;
 
 				const tenant = responseData?.tenant ?? responseData?.tenants?.[0];
 				const tenantName =
 					(typeof tenant === 'object' && (tenant?.schema_name || tenant?.tenant_name || tenant?.domain)) ||
 					tenant;
 
-				if (isPlatformAdminUser) {
+				if (isPlatformAdminUser || isPlatformPartnerUser) {
 					Cookies.remove('tenant');
 				} else if (tenantName !== undefined && tenantName !== null) {
 					Cookies.set('tenant', String(tenantName));
@@ -102,7 +105,7 @@ const Login = ({
 				const token = responseData?.access ?? responseData?.token ?? Cookies.get('token');
 				if (token) {
 					Cookies.set('token', token);
-					updateToken(token, isPlatformAdminUser ? null : tenantName);
+					updateToken(token, isPlatformAdminUser || isPlatformPartnerUser ? null : tenantName);
 				}
 
 				setUser(enrichedUser?.email ?? values.loginUsername);
@@ -131,7 +134,13 @@ const Login = ({
 		return <AbaciLoader />;
 	}
 	return (
-		<PageWrapper isProtected={false} title={pageTitle} className='p-0 bg-white'>
+		<PageWrapper
+			isProtected={false}
+			title={pageTitle}
+			className={classNames('p-0', {
+				'bg-white': !darkModeStatus,
+				'bg-dark': darkModeStatus,
+			})}>
 			<Page className='p-0' container={false}>
 				<div style={{ width: '100%', height: '100vh' }}>
 					<Container fluid className='p-0'>
@@ -150,7 +159,11 @@ const Login = ({
 									<div style={{ width: '80%' }}>
 										<div className='py-5'>
 											<div className='text-center mb-4'>
-												<img src={LogoForLogin} alt='Logo' height='70' />
+												<img
+													src={darkModeStatus ? ClockInLogoDark : LogoForLogin}
+													alt='Logo'
+													height='70'
+												/>
 											</div>
 
 											<div className='text-center h2 mb-4'>{heading}</div>
