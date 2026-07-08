@@ -6,6 +6,7 @@ import {
 	ATTENDANCE_REMOVED_META,
 	isAttendanceDeleted,
 	calendarEventStyleFromColor,
+	getWorkedTimeFromAttendance,
 } from '../../../pages/Attendance/attendanceStatusUtils';
 import {
 	shiftLabelsFromShiftsField,
@@ -238,18 +239,6 @@ const ReusableScheduleCalendar = ({
 		return 0;
 	};
 
-	const getTotalWorkedHrs = (row: any): number | null => {
-		const att = row?.attendance;
-		if (att && typeof att === 'object' && !Array.isArray(att)) {
-			const raw = att.total_worked_hrs ?? att.total_worked_hours;
-			const n = Number(raw);
-			if (Number.isFinite(n) && n >= 0) return n;
-		}
-		const top = Number(row?.total_worked_hrs ?? row?.total_worked_hours);
-		if (Number.isFinite(top) && top >= 0) return top;
-		return null;
-	};
-
 	const buildScheduleEventTitle = (row: any): string => {
 		const lines: string[] = [];
 		const sd = row?.special_day;
@@ -259,7 +248,7 @@ const ReusableScheduleCalendar = ({
 			const sdName = String((sd as { name?: string }).name || '').trim();
 			if (sdName) lines.push(sdName);
 			const shiftLines = shiftLabelsFromShiftsField((sd as { shifts?: unknown }).shifts);
-			if (shiftLines.length) lines.push(summarizeShiftLabels(shiftLines, 2));
+			if (shiftLines.length) lines.push(...shiftLines);
 		}
 
 		const sched = row?.schedule;
@@ -269,7 +258,7 @@ const ReusableScheduleCalendar = ({
 			const shiftSource =
 				typeof sched === 'object' && !Array.isArray(sched) ? (sched as { shifts?: unknown }).shifts : sched;
 			const shiftLines = shiftLabelsFromShiftsField(shiftSource);
-			if (shiftLines.length) lines.push(summarizeShiftLabels(shiftLines, 2));
+			if (shiftLines.length) lines.push(...shiftLines);
 		}
 
 		if (!lines.length) {
@@ -334,11 +323,9 @@ const ReusableScheduleCalendar = ({
 		const statusMeta = getStatusMeta(dayStatus);
 		if (!statusMeta) return;
 		let title = statusMeta.label;
-		if (normalizeStatusKey(dayStatus) === 'PRESENT') {
-			const workedHrs = getTotalWorkedHrs(row);
-			if (workedHrs != null) {
-				title = `${title}\nWorked: ${workedHrs}hrs`;
-			}
+		const workedTime = getWorkedTimeFromAttendance(row?.attendance);
+		if (workedTime) {
+			title = `${title}\n${workedTime}`;
 		}
 		if (calendarType === 'group') {
 			const counts = getGroupDayScheduleCounts(row);
@@ -673,7 +660,6 @@ const ReusableScheduleCalendar = ({
 										border: 'none',
 										boxShadow: 'none',
 										padding: '2px 3px',
-										pointerEvents: 'none',
 									},
 								};
 							}

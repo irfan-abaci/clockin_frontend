@@ -10,6 +10,7 @@ import Icon from '../../../icon/Icon';
 import Button from '../../../bootstrap/Button';
 import Moments from '../../../../helpers/Moment';
 import useDarkMode from '../../../../hooks/useDarkMode';
+import { formatMinutesToHms } from '../../../../pages/Attendance/attendanceStatusUtils';
 
 const formatEnteredBy = (enteredBy: unknown): string | null => {
 	if (enteredBy == null) return null;
@@ -56,7 +57,14 @@ const timestampForTimeline = (data: any): string | null => {
 	return at != null && String(at).trim() !== '' ? String(at) : null;
 };
 
-const remarksDisplayForTimeline = (data: any): string => {
+const formatWorkedMinsTillNow = (data: any): string | null => {
+	const raw = data?.worked_mins_till_now ?? data?.worked_minutes_till_now;
+	const n = Number(raw);
+	if (!Number.isFinite(n) || n <= 0) return null;
+	return formatMinutesToHms(n);
+};
+
+const remarksDisplayForTimeline = (data: any, showWorkedMinsTillNow = false) => {
 	if (isEventDeleted(data)) {
 		const typeLabel = eventTypeLabel(data);
 		const deletedBy = formatEnteredBy(data?.deleted_by);
@@ -65,15 +73,17 @@ const remarksDisplayForTimeline = (data: any): string => {
 			? `${eventPrefix}removed by ${deletedBy}`
 			: `${eventPrefix}removed`;
 	}
-	const entered = formatEnteredBy(data?.entered_by);
 	const method =
 		data?.method != null && String(data.method).trim() !== ''
 			? String(data.method).trim()
 			: null;
-	const descParts = [
-		entered ? `Entered by ${entered}` : null,
-		method ? `Method: ${method}` : null,
-	].filter(Boolean);
+	const primaryDetail = showWorkedMinsTillNow
+		? formatWorkedMinsTillNow(data)
+		: (() => {
+				const entered = formatEnteredBy(data?.entered_by);
+				return entered ? `Entered by ${entered}` : null;
+			})();
+	const descParts = [primaryDetail, method ? `Method: ${method}` : null].filter(Boolean);
 	return descParts.join(' · ') || '—';
 };
 
@@ -98,6 +108,8 @@ export type AttendanceEventsTimelineProps = {
 	maxHeight?: string;
 	showActions?: boolean;
 	actionDisabled?: boolean;
+	/** When true, shows worked_mins_till_now (e.g. `07h`) instead of entered_by. */
+	showWorkedMinsTillNow?: boolean;
 	onEdit?: (event: any) => void;
 	onDelete?: (event: any) => void;
 };
@@ -109,6 +121,7 @@ const AttendanceEventsTimeline = ({
 	maxHeight = DEFAULT_TIMELINE_SCROLL_MAX_HEIGHT,
 	showActions = false,
 	actionDisabled = false,
+	showWorkedMinsTillNow = false,
 	onEdit,
 	onDelete,
 }: AttendanceEventsTimelineProps) => {
@@ -155,7 +168,7 @@ const AttendanceEventsTimeline = ({
 				{items.map((data, index) => {
 					const key = data?.id ?? `${data?.event_type}-${data?.timestamp}-${index}`;
 					const deleted = isEventDeleted(data);
-					const desc = remarksDisplayForTimeline(data);
+					const desc = remarksDisplayForTimeline(data, showWorkedMinsTillNow);
 					const statusText = statusDisplayTextForTimeline(data);
 					const statusColor = timelineHexForEvent(data);
 					const displayTimestamp = timestampForTimeline(data);
