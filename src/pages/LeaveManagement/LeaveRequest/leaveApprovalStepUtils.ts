@@ -4,6 +4,8 @@ export type LeaveApprovalStep = {
 	status?: string;
 	approver_type?: string;
 	approver_type_display?: string;
+	approver_role?: string;
+	approver_role_display?: string;
 	acted_by?: { id?: number; name?: string; email?: string } | string | null;
 	acted_at?: string | null;
 	remarks?: string | null;
@@ -24,6 +26,8 @@ const isApprovalStep = (value: unknown): value is LeaveApprovalStep =>
 		'status' in value ||
 		'approver_type' in value ||
 		'approver_type_display' in value ||
+		'approver_role' in value ||
+		'approver_role_display' in value ||
 		'is_current' in value);
 
 const stepsFromNumericKeys = (obj: Record<string, unknown>): LeaveApprovalStep[] =>
@@ -51,6 +55,14 @@ export const actedByLabel = (actedBy: LeaveApprovalStep['acted_by']) => {
 	if (typeof actedBy === 'string') return actedBy;
 	return actedBy?.name || actedBy?.email || null;
 };
+
+export const approvalStepApproverLabel = (step?: LeaveApprovalStep | null) =>
+	step?.approver_type_display?.trim() ||
+	step?.approver_role_display?.trim() ||
+	(step?.approver_type?.trim() ? formatApproverType(step.approver_type) : null) ||
+	(step?.approver_role?.trim() ? formatApproverType(step.approver_role) : null) ||
+	actedByLabel(step?.acted_by) ||
+	(step?.level != null ? `Level ${step.level}` : 'Approver');
 
 export const sortApprovalSteps = (steps?: LeaveApprovalStep[]) => {
 	if (!Array.isArray(steps)) return [];

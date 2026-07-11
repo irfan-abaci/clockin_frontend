@@ -4,8 +4,8 @@ import { useParams } from 'react-router-dom';
 import { authAxios } from '../../../../axiosInstance';
 import Card, { CardBody } from '../../../bootstrap/Card';
 import useToasterNotification from '../../../../hooks/useToasterNotification';
-import { userTypesToCapital } from '../../../../helpers/constants';
 import { resolveUserAvatarSource } from '../../../../helpers/functions';
+import { mapAccountToTenantRoleSelect } from '../../../../helpers/roleToggleUtils';
 import UserDetailAvatar from './UserDetailAvatar';
 
 const DetailRow = ({ label, value }: { label: string; value?: React.ReactNode }) => (
@@ -18,17 +18,6 @@ const DetailRow = ({ label, value }: { label: string; value?: React.ReactNode })
 		<div className='fs-6 fw-semibold'>{value != null && value !== '' ? value : '—'}</div>
 	</div>
 );
-
-const formatUserType = (user: any) => {
-	const t = user?.user_type;
-	if (t == null) return '';
-	if (typeof t === 'object' && t?.name) {
-		return userTypesToCapital[t.name as keyof typeof userTypesToCapital] || String(t.name);
-	}
-	if (t === 1) return 'Company Admin';
-	if (t === 2) return 'Company User';
-	return String(t);
-};
 
 const UserDetails = ({
 	userId,
@@ -44,8 +33,8 @@ const UserDetails = ({
 	const [user, setUser] = useState<any>(null);
 	const [isUserLoading, setIsUserLoading] = useState(true);
 	const { showErrorNotification } = useToasterNotification();
-
 	const avatarSource = resolveUserAvatarSource(user);
+	const tenantRoleLabel = mapAccountToTenantRoleSelect(user).label;
 
 	const refreshUser = useCallback(() => {
 		if (!resolvedUserId) return;
@@ -131,7 +120,7 @@ const UserDetails = ({
 						<DetailRow label='Country' value={user?.country} /> */}
 						<DetailRow label='Personal contact' value={user?.personal_contact_number} />
 						<DetailRow label='Office contact' value={user?.office_contact_number || ud?.user_contact_phone} />
-						<DetailRow label='User type' value={formatUserType(user)} />
+						<DetailRow label='Role' value={tenantRoleLabel} />
 						{/* <DetailRow label='Access category' value={user?.access_category?.category} /> */}
 						<DetailRow
 						label='Department'

@@ -1,6 +1,7 @@
 import React, { useCallback, useContext, useMemo, useState } from 'react';
 import MaterialTable from '@material-table/core';
 import { ThemeProvider } from '@mui/material/styles';
+import { Tooltip } from '@mui/material';
 import PropTypes from 'prop-types';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { useSelector } from 'react-redux';
@@ -12,8 +13,12 @@ import AuthContext from '../../../contexts/authContext';
 import StatusBadge from '../../../components/CustomComponent/StatusBadge';
 import EditButton from '../../../components/CustomComponent/Buttons/EditButton';
 import Card, { CardBody } from '../../../components/bootstrap/Card';
+import Button from '../../../components/bootstrap/Button';
 import { isSelfEquivalentMode } from '../../../helpers/roleToggleUtils';
 import WfhRequestActionButtons from './WfhRequestActionButtons';
+import WfhApprovalTimelineModal, {
+	type WfhApprovalTimelineContext,
+} from './WfhApprovalTimelineModal';
 import {
 	WFH_REQUEST_STATUS_LOOKUP,
 	isEditableWfhRequestStatus,
@@ -44,8 +49,22 @@ const WfhRequests = ({
 	const [filterEnabled, setFilterEnabled] = useState(Boolean(statusFilter));
 	const [pageSize, setPageSize] = useState(5);
 	const [sortState, setSortState] = useState({ orderBy: null, orderDirection: 'asc' });
+	const [timelineOpen, setTimelineOpen] = useState(false);
+	const [timelineContext, setTimelineContext] = useState<WfhApprovalTimelineContext | null>(null);
 	const { theme, rowStyles, headerStyles } = useTablestyle();
 	const { showErrorNotification } = useToasterNotification();
+
+	const openApprovalTimeline = useCallback((rowData: any) => {
+		setTimelineContext({
+			wfhRequestId: rowData?.id,
+			employeeName: rowData?.user?.name,
+			reason: rowData?.reason,
+			startDate: rowData?.start_date,
+			endDate: rowData?.end_date,
+			overallStatus: wfhRequestRowStatus(rowData),
+		});
+		setTimelineOpen(true);
+	}, []);
 
 	const showEditWfhRequest = useCallback(
 		(rowData: any) =>
@@ -125,6 +144,19 @@ const WfhRequests = ({
 						canReject={rowData?.actions?.can_reject}
 						canCancel={rowData?.actions?.can_cancel}
 					/>
+					<Tooltip arrow title='View approval status' placement='top'>
+						<Button
+							type='button'
+							color='warning'
+							isLight
+							size='sm'
+							icon='Visibility'
+							onClick={(e: React.MouseEvent) => {
+								e.stopPropagation();
+								openApprovalTimeline(rowData);
+							}}
+						/>
+					</Tooltip>
 					{showEditWfhRequest(rowData) ? (
 						<EditButton modalShow={editModalToggle} id={rowData.id} />
 					) : null}
@@ -132,7 +164,7 @@ const WfhRequests = ({
 			),
 		};
 		return [...staticColumns, actionColumn];
-	}, [staticColumns, showEditWfhRequest, tableRef, editModalToggle]);
+	}, [staticColumns, showEditWfhRequest, tableRef, editModalToggle, openApprovalTimeline]);
 
 	const tableActions = useMemo(
 		() => [
@@ -161,7 +193,13 @@ const WfhRequests = ({
 	);
 
 	return (
-		<Card stretch>
+		<>
+			<WfhApprovalTimelineModal
+				isOpen={timelineOpen}
+				setIsOpen={setTimelineOpen}
+				context={timelineContext}
+			/>
+			<Card stretch>
 			<CardBody>
 				<div className='material-table-wrapper'>
 					<ThemeProvider theme={theme}>
@@ -216,6 +254,7 @@ const WfhRequests = ({
 				</div>
 			</CardBody>
 		</Card>
+		</>
 	);
 };
 

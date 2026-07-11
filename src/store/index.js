@@ -6,8 +6,6 @@ import FieldSlice from './fields';
 import FeaturesSlice from './features';
 import NotificationSlice from './notifications';
 import DashboardSlice from './dashboard';
-import VehicleSlice from './vehicles'
-
 
 const store = configureStore({
 	reducer: {
@@ -18,7 +16,6 @@ const store = configureStore({
 		FeaturesSlice,
 		NotificationSlice,
 		DashboardSlice,
-		VehicleSlice
 	},
 });
 

@@ -8,7 +8,11 @@ import ExportButton, { EXPORT_VARIANTS } from '../../components/CustomComponent/
 import AttendanceTable from './AttendanceTable';
 import AddAttendance from './AddAttendance';
 import AuthContext from '../../contexts/authContext';
-import { isPrivilegedToggleMode } from '../../helpers/roleToggleUtils';
+import {
+	isUserRole as isEmployeeRole,
+	isPrivilegedToggleMode,
+	resolveTenantRouteRole,
+} from '../../helpers/roleToggleUtils';
 
 const Index = () => {
 	const { userData } = useContext(AuthContext);
@@ -18,10 +22,9 @@ const Index = () => {
 	const urlBackup = useRef<string | undefined>(undefined);
 	const [attendanceModalShow, setAttendanceModalShow] = useState(false);
 	const [editId, setEditId] = useState<any>(null);
-	const isUserRole = String(userData?.user_type || '').toLowerCase() === 'user';
-	const isAdminSelfMode = userData?.user_type === 'Admin' && mode === 'Self';
-	const showAddAttendance = isUserRole || isAdminSelfMode;
-	const showExport = isPrivilegedToggleMode(userData?.user_type, mode);
+	const showAddAttendance =
+		isEmployeeRole(userData) || (resolveTenantRouteRole(userData) === 'Admin' && mode === 'Self');
+	const showExport = isPrivilegedToggleMode(userData, mode);
 
 	const openAddModal = (state: boolean) => {
 		if (state) setEditId(null);

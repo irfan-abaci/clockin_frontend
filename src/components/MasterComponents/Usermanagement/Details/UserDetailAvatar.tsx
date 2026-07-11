@@ -9,6 +9,7 @@ import base64toFile from '../../../../helpers/base64toFile';
 import useToasterNotification from '../../../../hooks/useToasterNotification';
 import usePermissionHook from '../../../../hooks/userPermissionHook';
 import AuthContext from '../../../../contexts/authContext';
+import { resolveTenantRouteRole } from '../../../../helpers/roleToggleUtils';
 
 type Props = {
 	userId: string | number;
@@ -23,14 +24,7 @@ const UserDetailAvatar = ({ userId, avatarSource, onUpdated, size = 96 }: Props)
 	const mode = accountToggle || 'Admin';
 	const canManageUser = usePermissionHook('manage_user');
 	const canEdit =
-		canManageUser ||
-		(userData?.user_type === 'Admin' && mode === 'Admin') ||
-		(typeof userData?.user_type === 'object' &&
-			userData?.user_type != null &&
-			mode === 'Admin' &&
-			['admin', 'super_admin'].includes(
-				String(userData.user_type.name || userData.user_type.role_name || '').toLowerCase(),
-			));
+		canManageUser || (resolveTenantRouteRole(userData) === 'Admin' && mode === 'Admin');
 
 	const [uploading, setUploading] = useState(false);
 	const [preview, setPreview] = useState<string | null>(null);
