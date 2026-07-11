@@ -1,11 +1,9 @@
 import React, { useContext, useRef, useState } from 'react';
-// import Swal from 'sweetalert2';
 import SubHeader, {
 	SubHeaderLeft,
 	SubHeaderRight,
 } from '../../layout/SubHeader/SubHeader';
 import Card, {
-	CardActions,
 	CardBody,
 	CardHeader,
 	CardLabel,
@@ -15,7 +13,6 @@ import PageWrapper from '../../layout/PageWrapper/PageWrapper';
 import AddUsers from './AddUsers';
 import EditUser from './EditUser';
 import UserManagementTableComponent from '../../components/MasterComponents/Usermanagement/UserMangementTableComponent';
-// import ExportButton from '../../components/CustomComponent/Buttons/ExportButton';
 import BulkUpload from '../../components/MasterComponents/BulkUpload/BulkUploadOffCanvas';
 import ButtonWithPopover from '../../components/CustomComponent/Buttons/ButtonWithPopover';
 import usePermissionHook from '../../hooks/userPermissionHook';
@@ -122,9 +119,6 @@ const Index = () => {
 						<CardLabel icon='' iconColor='info'>
 							<CardTitle tag='div' className='h5' ><p /></CardTitle>
 						</CardLabel>
-						{/* <CardActions>
-						  <ExportButton url={urlBackup} hiddenColumnsKey='' name='Users' />
-						</CardActions> */}
 					</CardHeader>
 					<CardBody className='table-responsive'><p />
 					{tenant && canSeeTenantFilter && <ButtonFiltter

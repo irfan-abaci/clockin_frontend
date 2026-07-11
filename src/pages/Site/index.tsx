@@ -12,11 +12,6 @@ import Card, {
 	CardTitle,
 } from '../../components/bootstrap/Card';
 import PageWrapper from '../../layout/PageWrapper/PageWrapper';
-// import AddUsers from './AddUsers';
-// import UserManagementTableComponent from '../../components/MasterComponents/Usermanagement/UserMangementTableComponent';
-// import ExportButton from '../../components/CustomComponent/Buttons/ExportButton';
-import BulkUpload from '../../components/MasterComponents/BulkUpload/BulkUploadOffCanvas';
-// import ButtonWithPopover from '../../components/CustomComponent/Buttons/ButtonWithPopover';
 import { useNavigate } from 'react-router-dom';
 import AddButton from '../../components/CustomComponent/Buttons/AddButton';
 import usePermissionHook from '../../hooks/userPermissionHook';
@@ -24,7 +19,6 @@ import AuthContext from '../../contexts/authContext';
 import ButtonFiltter from '../../components/CustomComponent/Filters/ButtonFiltter';
 import SiteManagementTableComponent from './SiteManagementTableComponent';
 import AddSite from './AddSite';
-import ButtonWithPopover from '../../components/CustomComponent/Buttons/ButtonWithPopover';
 
 const Index = () => {
 
@@ -33,8 +27,6 @@ const Index = () => {
 	const navigate = useNavigate();
 	const [addModalShow, setAddModalShow] = useState(false);
 	const [editId, setEditId] = useState<any>(null);
-	const [addBulkModalShow, setAddBulkModalShow] = useState(false);
-	const canManageUser = usePermissionHook('manage_user');
 	const {userData}=useContext(AuthContext)
 	const tenant = userData?.active_relations?.[0]?.tenant_details || null;
 	const [activeTab, setActiveTab] = useState('All')
@@ -62,26 +54,6 @@ const Index = () => {
 					id={editId}
 				/>
 			)}
-			{/* {editModalShow && (
-				<UserForm
-					isOpen={editModalShow}
-					setIsOpen={setEditModalShow}
-					tableRef={tableRef}
-					id={dataToBeEdited}
-					title='Edit User Details'
-				/>
-			)} */}
-			{addBulkModalShow && (
-				<BulkUpload
-					isOpen={addBulkModalShow}
-					setIsOpen={setAddBulkModalShow}
-					tableRef={tableRef}
-					title='Bulk Upload'
-					api='api/users/user_csv_import_and_sample_csv_download?user_type=[Admin,User]'
-					fileName='Users.csv'
-
-				/>
-			)}
 
 			<PageWrapper title='Site Management'>
 				<SubHeader>
@@ -92,11 +64,6 @@ const Index = () => {
 
 					</SubHeaderLeft>
 					<SubHeaderRight>
-						{/* <ButtonWithPopover 
-						  addModalShow={setAddModalShow}
-						  addBulkModalShow={setAddBulkModalShow}
-						  buttonName='Add Site'
-						/> */}
 						<AddButton modalShow={openAddModal} name="Add Site" />
 					</SubHeaderRight>
 				</SubHeader>
@@ -104,10 +71,7 @@ const Index = () => {
 					<CardHeader borderSize={1}>
 						<CardLabel icon='' iconColor='info'>
 							<CardTitle tag='div' className='h5' ><p /></CardTitle>
-						</CardLabel>
-						{/* <CardActions>
-						  <ExportButton url={urlBackup} hiddenColumnsKey='' name='Users' />
-						</CardActions> */}
+							</CardLabel>
 					</CardHeader>
 					<CardBody className='table-responsive'><p />
 					{tenant && canSeeTenantFilter && <ButtonFiltter

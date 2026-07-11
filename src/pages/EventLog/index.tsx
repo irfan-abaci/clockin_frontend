@@ -7,13 +7,14 @@ import ExportButton, { EXPORT_VARIANTS } from '../../components/CustomComponent/
 import EventTable from './EventTable';
 import AddEventForm from './AddEventForm';
 import AuthContext from '../../contexts/authContext';
+import { resolveTenantRouteRole } from '../../helpers/roleToggleUtils';
 
 const Index = () => {
 	const { userData } = useContext(AuthContext);
 	const tableRef = useRef();
 	const urlBackup = useRef<string | undefined>(undefined);
 	const [eventModalShow, setEventModalShow] = useState(false);
-	const showAddEvent = userData?.user_type === 'Admin';
+	const showAddEvent = resolveTenantRouteRole(userData) === 'Admin';
 
 	const openAddModal = (state: boolean) => {
 		setEventModalShow(state);

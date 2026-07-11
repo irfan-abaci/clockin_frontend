@@ -109,7 +109,7 @@ const AttendanceEventsTimelineModal = ({
 		<Modal
 			isOpen={isOpen}
 			setIsOpen={setIsOpen}
-			size='md'
+			isAnimation={false}
 			isCentered
 			isScrollable
 			titleId='attendance-events-timeline'>

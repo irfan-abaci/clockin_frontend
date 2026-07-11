@@ -322,30 +322,6 @@ export const formatBytes = (bytes: number) => {
 
   }
 
-  // const invitationDelete: [
-  //   'zaair_admin',
-  //   'tenant_admin',
-  //   'tenant_user',
-  //   'abaci_admin',
-  //   'tenant_employee',
-  // ]
-
-
-  // interface User {
-  //   user_type: string;
-  //   [key: string]: any; // Additional properties
-  // }
-  // export const canDeleteInvitation=(state:string,createdUser:User,loginUser:User)=>{
-      
-  //   if(state==="Scheduled"||state==="Delayed"||state==="No Show"||invitationDelete.includes(loginUser.user_type)){
-  //     return true
-
-  //   }
-    
-  //   return false
-  // }
-
-
 
 export const formatTimestamp=(timestamp:string)=> {
   if (!timestamp) return '';  // Handle cases where timestamp is undefined or null

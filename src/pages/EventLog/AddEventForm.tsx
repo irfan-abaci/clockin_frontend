@@ -14,6 +14,7 @@ import ReactSelectComponent from '../../components/CustomComponent/Select/ReactS
 import FormGroup from '../../components/bootstrap/forms/FormGroup';
 import AuthContext from '../../contexts/authContext';
 import { buildLocalIsoTimestamp } from '../../helpers/buildLocalIsoTimestamp';
+import { resolveTenantRouteRole } from '../../helpers/roleToggleUtils';
 
 const formatAccountLabel = (item: any): string => {
 	if (!item) return '';
@@ -84,8 +85,7 @@ const AddEventForm = ({ isOpen, setIsOpen, tableRef, title }: any) => {
 	const { userData } = useContext(AuthContext);
 	const accountToggle = useSelector((state: any) => state.authSlice?.account_toggle_button);
 	const mode = accountToggle === 'Self' ? 'Self' : 'Admin';
-	const isAdmin = userData?.user_type === 'Admin';
-	const isAdminSelfMode = isAdmin && mode === 'Self';
+	const isAdminSelfMode = resolveTenantRouteRole(userData) === 'Admin' && mode === 'Self';
 
 	const {
 		register,

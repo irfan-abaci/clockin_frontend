@@ -15,12 +15,13 @@ import AddHoliday from './AddHoliday';
 import HolidayYearCalendar from './HolidayYearCalendar';
 import ButtonFiltter from '../../../components/CustomComponent/Filters/ButtonFiltter';
 import AuthContext from '../../../contexts/authContext';
+import { resolveTenantRouteRole } from '../../../helpers/roleToggleUtils';
 
 const Holiday = ({ }: any) => {
     const { userData } = useContext(AuthContext);
     const accountToggle = useSelector((state: any) => state.authSlice?.account_toggle_button);
     const mode = accountToggle === 'Self' ? 'Self' : 'Admin';
-    const isAdminMode = userData?.user_type === 'Admin' && mode === 'Admin';
+    const isAdminMode = resolveTenantRouteRole(userData) === 'Admin' && mode === 'Admin';
     const tableRef = useRef(null);
     const urlBackup = useRef('');
     const [isFormOpen, setIsFormOpen] = useState(false);

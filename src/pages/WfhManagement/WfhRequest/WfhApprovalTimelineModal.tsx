@@ -16,21 +16,22 @@ import {
 	STEP_DOT_COLORS,
 	type LeaveApprovalStep,
 	type LeaveApprovalStepsMeta,
-} from './leaveApprovalStepUtils';
+} from '../../LeaveManagement/LeaveRequest/leaveApprovalStepUtils';
+import { wfhRequestDetailUrl } from './wfhRequestUtils';
 
-export type LeaveApprovalTimelineContext = {
-	leaveRequestId?: number | string;
+export type WfhApprovalTimelineContext = {
+	wfhRequestId?: number | string;
 	employeeName?: string;
-	leaveTypeName?: string;
-	fromDate?: string;
-	toDate?: string;
+	reason?: string;
+	startDate?: string;
+	endDate?: string;
 	overallStatus?: string;
 };
 
-type LeaveApprovalTimelineModalProps = {
+type WfhApprovalTimelineModalProps = {
 	isOpen: boolean;
 	setIsOpen: (open: boolean) => void;
-	context: LeaveApprovalTimelineContext | null;
+	context: WfhApprovalTimelineContext | null;
 };
 
 const STEP_ICON: Record<string, string> = {
@@ -50,11 +51,11 @@ const labelStyle = (muted: string) => ({
 	marginBottom: 4,
 });
 
-const LeaveApprovalTimelineModal = ({
+const WfhApprovalTimelineModal = ({
 	isOpen,
 	setIsOpen,
 	context,
-}: LeaveApprovalTimelineModalProps) => {
+}: WfhApprovalTimelineModalProps) => {
 	const { darkModeStatus } = useDarkMode();
 	const { showErrorNotification } = useToasterNotification();
 	const showErrorRef = useRef(showErrorNotification);
@@ -66,7 +67,7 @@ const LeaveApprovalTimelineModal = ({
 	const overallStatus = String(context?.overallStatus ?? '').toUpperCase();
 
 	useEffect(() => {
-		if (!isOpen || context?.leaveRequestId == null) {
+		if (!isOpen || context?.wfhRequestId == null) {
 			setSteps([]);
 			setStepsMeta({});
 			return undefined;
@@ -78,7 +79,7 @@ const LeaveApprovalTimelineModal = ({
 		setStepsMeta({});
 
 		authAxios
-			.get(`/api/hr/leave-requests/${context.leaveRequestId}/`)
+			.get(wfhRequestDetailUrl(context.wfhRequestId))
 			.then((res) => {
 				if (!cancelled) {
 					const { steps: parsedSteps, meta } = parseApprovalStepsResponse(res.data);
@@ -100,7 +101,7 @@ const LeaveApprovalTimelineModal = ({
 		return () => {
 			cancelled = true;
 		};
-	}, [isOpen, context?.leaveRequestId]);
+	}, [isOpen, context?.wfhRequestId]);
 
 	const textPrimary = darkModeStatus ? '#f8f9fa' : '#111827';
 	const textMuted = darkModeStatus ? '#9ca3af' : '#6b7280';
@@ -110,27 +111,27 @@ const LeaveApprovalTimelineModal = ({
 	const border = darkModeStatus ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
 
 	const dateRange = useMemo(() => {
-		if (context?.fromDate && context?.toDate) {
-			return `${context.fromDate} – ${context.toDate}`;
+		if (context?.startDate && context?.endDate) {
+			return `${context.startDate} – ${context.endDate}`;
 		}
-		return context?.fromDate || context?.toDate || '';
-	}, [context?.fromDate, context?.toDate]);
+		return context?.startDate || context?.endDate || '';
+	}, [context?.startDate, context?.endDate]);
 
-	const modalTitle = context?.employeeName?.trim() || 'Leave request';
+	const modalTitle = context?.employeeName?.trim() || 'WFH request';
 
 	return (
 		<Modal
 			isOpen={isOpen}
 			setIsOpen={setIsOpen}
-			size='md'
+			isAnimation={false}
 			isCentered
 			isScrollable
-			titleId='leave-approval-status'>
+			titleId='wfh-approval-status'>
 			<ModalHeader setIsOpen={setIsOpen}>
-				<ModalTitle id='leave-approval-status'>{modalTitle}</ModalTitle>
+				<ModalTitle id='wfh-approval-status'>{modalTitle}</ModalTitle>
 			</ModalHeader>
 			<ModalBody className='pt-3 pb-5 px-4 px-md-5'>
-				{(context?.leaveTypeName || dateRange || overallStatus) && (
+				{(context?.reason || dateRange || overallStatus) && (
 					<div
 						className='rounded-3 p-4 mb-5'
 						style={{
@@ -138,11 +139,11 @@ const LeaveApprovalTimelineModal = ({
 							border: `1px solid ${border}`,
 						}}>
 						<div className='row g-4'>
-							{context?.leaveTypeName ? (
+							{context?.reason ? (
 								<div className='col-sm-6'>
-									<div style={labelStyle(textSubtle)}>Leave type</div>
+									<div style={labelStyle(textSubtle)}>Reason</div>
 									<div style={{ color: textPrimary, fontSize: '1rem', fontWeight: 600 }}>
-										{context.leaveTypeName}
+										{context.reason}
 									</div>
 								</div>
 							) : null}
@@ -162,7 +163,6 @@ const LeaveApprovalTimelineModal = ({
 									</CustomBadge>
 								</div>
 							) : null}
-						
 						</div>
 					</div>
 				)}
@@ -318,4 +318,4 @@ const LeaveApprovalTimelineModal = ({
 	);
 };
 
-export default LeaveApprovalTimelineModal;
+export default WfhApprovalTimelineModal;

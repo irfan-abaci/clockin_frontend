@@ -24,6 +24,9 @@ import AssetRequestViewDocumentsModal, {
 import AssetRequestCommentsModal, {
 	type AssetRequestCommentsContext,
 } from './AssetRequestCommentsModal';
+import AssetApprovalTimelineModal, {
+	type AssetApprovalTimelineContext,
+} from './AssetApprovalTimelineModal';
 import {
 	ASSET_REQUEST_STATUS_LOOKUP,
 	assetRequestRowStatus,
@@ -62,6 +65,8 @@ const AssetRequests = ({
 	);
 	const [commentsOpen, setCommentsOpen] = useState(false);
 	const [commentsContext, setCommentsContext] = useState<AssetRequestCommentsContext | null>(null);
+	const [timelineOpen, setTimelineOpen] = useState(false);
+	const [timelineContext, setTimelineContext] = useState<AssetApprovalTimelineContext | null>(null);
 	const { theme, rowStyles, headerStyles } = useTablestyle();
 	const { showErrorNotification } = useToasterNotification();
 
@@ -82,6 +87,16 @@ const AssetRequests = ({
 			status: assetRequestRowStatus(rowData),
 		});
 		setCommentsOpen(true);
+	}, []);
+
+	const openApprovalTimeline = useCallback((rowData: any) => {
+		setTimelineContext({
+			assetRequestId: rowData?.id,
+			employeeName: rowData?.user?.name,
+			description: rowData?.description,
+			overallStatus: assetRequestRowStatus(rowData),
+		});
+		setTimelineOpen(true);
 	}, []);
 
 	const showEditAssetRequest = useCallback(
@@ -152,6 +167,19 @@ const AssetRequests = ({
 						canReject={rowData?.actions?.can_reject}
 						canCancel={rowData?.actions?.can_cancel}
 					/>
+					<Tooltip arrow title='View approval status' placement='top'>
+						<Button
+							type='button'
+							color='warning'
+							isLight
+							size='sm'
+							icon='Visibility'
+							onClick={(e: React.MouseEvent) => {
+								e.stopPropagation();
+								openApprovalTimeline(rowData);
+							}}
+						/>
+					</Tooltip>
 					<Tooltip arrow title='Comments' placement='top'>
 						<Button
 							type='button'
@@ -194,6 +222,7 @@ const AssetRequests = ({
 		editModalToggle,
 		openViewDocuments,
 		openComments,
+		openApprovalTimeline,
 	]);
 
 	const tableActions = useMemo(
@@ -224,6 +253,11 @@ const AssetRequests = ({
 
 	return (
 		<>
+			<AssetApprovalTimelineModal
+				isOpen={timelineOpen}
+				setIsOpen={setTimelineOpen}
+				context={timelineContext}
+			/>
 			<AssetRequestCommentsModal
 				isOpen={commentsOpen}
 				setIsOpen={setCommentsOpen}

@@ -356,13 +356,6 @@ export const roleWiseRoutes: Record<string, any> = {
 
 
 export const pagesNotInSideBar = {
-	VehicleDetails: {
-		id: 'VehicleDetails',
-		text: 'Vehicle Details',
-		path: '/vehicles-details/:id',
-		icon: '',
-	},
-
 	UsertDetails: {
 		id: 'UserDetails',
 		text: 'User Details',
