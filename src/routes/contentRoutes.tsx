@@ -17,7 +17,6 @@ const MAINROUTE={
 	SiteDetail: lazy(() => import('../pages/Site/SiteDetails/SiteDetailPage')),
 	Shift: lazy(() => import('../pages/Shift/index')),
 	Doors: lazy(() => import('../pages/Doors/index')),
-	ScheduleComponentDemo: lazy(() => import('../pages/ScheduleComponentDemo/index')),
 	UserDetails: lazy(() => import('../pages/UserManagement/UserManagementPage')),
 	LeaveRequests: lazy(() => import('../pages/LeaveManagement/LeaveRequestsPage')),
 	AssetRequests: lazy(() => import('../pages/AssetManagement/AssetRequestsPage')),
@@ -107,11 +106,6 @@ const RouteConfig: CustomRouteConfig[] = [
 	{
 		path: allRoutesObject.Doors.path,
 		element: <MAINROUTE.Doors />,
-		allowedTo: ADMIN_CONSOLE_ROLES,
-	},
-	{
-		path: allRoutesObject.ScheduleComponentDemo.path,
-		element: <MAINROUTE.ScheduleComponentDemo />,
 		allowedTo: ADMIN_CONSOLE_ROLES,
 	},
 	{

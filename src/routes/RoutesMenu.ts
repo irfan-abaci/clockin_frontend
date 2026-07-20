@@ -53,10 +53,6 @@ export const allRoutesObject = {
 		id: 'Licenses',
 		path: '/licenses',
 	},
-	ScheduleComponentDemo: {
-		id: 'ScheduleComponentDemo',
-		path: '/schedule-component-demo',
-	},
 	LeaveRequests: {
 		id: 'LeaveRequests',
 		path: '/leave-requests',
@@ -423,12 +419,12 @@ export const pagesNotInSideBar = {
 		path: '/signup',
 		icon: 'Login',
 	},
-	Contact: {
-		id: 'Contact',
-		text: 'Contact',
-		path: '/contact',
-		icon: '',
-	},
+	// Contact: {
+	// 	id: 'Contact',
+	// 	text: 'Contact',
+	// 	path: '/contact',
+	// 	icon: '',
+	// },
 	Register: {
 		id: 'Register',
 		text: 'Login',

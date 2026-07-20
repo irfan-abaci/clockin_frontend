@@ -9,10 +9,8 @@ import { authAxios } from '../../../axiosInstance';
 import useTablestyle from '../../../hooks/useTablestyles';
 import { formatFilters } from '../../../helpers/functions';
 import useToasterNotification from '../../../hooks/useToasterNotification';
-import { statusColorCodes } from '../../../helpers/constants';
 import AuthContext from '../../../contexts/authContext';
 import AcceptandRejectBasedOnStatus from '../../../components/CustomComponent/Buttons/AcceptandRejectBasedOnStatus';
-import CustomBadge from '../../../components/CustomComponent/CustomBadge';
 import EditButton from '../../../components/CustomComponent/Buttons/EditButton';
 import Card, { CardBody } from '../../../components/bootstrap/Card';
 import Button from '../../../components/bootstrap/Button';
@@ -41,6 +39,7 @@ import {
 	todayLeaveRequestDateParam,
 	type LeaveRequestUrlFilters,
 } from './leaveRequestTableNavigation';
+import StatusBadge from '../../../components/CustomComponent/StatusBadge';
 
 export type LeaveTypeTableFilter = {
 	id: number;
@@ -116,9 +115,7 @@ const LeaveRequests = ({
 	const isSelfMode = isSelfEquivalentMode(userData, mode);
 	const userIdFilter = isSelfMode && userData?.id ? `user=${userData.id}` : '';
 	const scopeFilters = userIdFilter;
-	/** Accept/Reject for Admin, Manager, and HR in privileged mode (not Self / user view) */
 	const showPrivilegedAcceptReject = isPrivilegedMode;
-
 	const [filterEnabled, setFilterEnabled] = useState(
 		Boolean(statusFilter || leaveTypeFilter || dateFilter),
 	);
@@ -245,12 +242,6 @@ const LeaveRequests = ({
 				render: (rowData: any) => rowData?.to_session || '----',
 			},
 			{
-				title: 'Reason',
-				field: 'reason',
-				sorting: false,
-				render: (rowData: any) => rowData?.reason || '----',
-			},
-			{
 				title: 'Status',
 				field: 'status',
 				lookup: LEAVE_STATUS_LOOKUP,
@@ -259,12 +250,18 @@ const LeaveRequests = ({
 					const status = leaveRequestRowStatus(rowData);
 					if (!status) return '----';
 					return (
-						<CustomBadge
-							color={statusColorCodes?.[String(status).toUpperCase()] || '#E4E4E4'}>
-							{status}
-						</CustomBadge>
+						<StatusBadge
+							status={status}
+							emptyFallback='----'>
+						</StatusBadge>
 					);
 				},
+			},
+			{
+				title: 'Reason',
+				field: 'reason',
+				sorting: false,
+				render: (rowData: any) => rowData?.reason || '----',
 			},
 		],
 		[leaveTypeFilter, statusFilter],
@@ -407,7 +404,6 @@ const LeaveRequests = ({
 					columns={columns as any}
 					tableRef={tableRef}
 					onFilterChange={handleTableFilterChange}
-					// onChangeRowsPerPage={setPageSize}
 					onOrderChange={(orderBy, orderDirection) => {
 						setSortState({ orderBy, orderDirection });
 					}}
@@ -477,7 +473,6 @@ const LeaveRequests = ({
 	);
 };
 
-/* eslint-disable react/forbid-prop-types */
 LeaveRequests.propTypes = {
 	tableRef: PropTypes.object.isRequired,
 	urlBackup: PropTypes.object.isRequired,
@@ -490,6 +485,5 @@ LeaveRequests.propTypes = {
 	dateFilter: PropTypes.string,
 	onUrlFiltersChange: PropTypes.func,
 };
-/* eslint-enable react/forbid-prop-types */
 
 export default LeaveRequests;

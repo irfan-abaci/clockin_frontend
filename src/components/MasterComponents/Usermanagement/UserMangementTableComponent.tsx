@@ -4,14 +4,9 @@ import { ThemeProvider } from '@mui/material/styles';
 import PropTypes from 'prop-types';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { authAxios } from '../../../axiosInstance';
-import { statusColorCodes, userTypesToCapital } from '../../../helpers/constants';
 import useTablestyle from '../../../hooks/useTablestyles';
-import StatusButton from '../../CustomComponent/Buttons/StatusButton';
 import { formatFilters } from '../../../helpers/functions';
 import useToasterNotification from '../../../hooks/useToasterNotification';
-import ResendButton from '../../CustomComponent/Buttons/ResendButton';
-import usePermissionHook from '../../../hooks/userPermissionHook';
-import CustomBadge from '../../CustomComponent/CustomBadge';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../../../contexts/authContext';
 import { resolveTenantRouteRole } from '../../../helpers/roleToggleUtils';
@@ -20,6 +15,7 @@ import EditButton from '../../CustomComponent/Buttons/EditButton';
 import ImageCell from '../../CustomComponent/Imagecell';
 import { resolveUserAvatarSource } from '../../../helpers/functions';
 import Moments from '../../../helpers/Moment';
+import StatusBadge from '../../CustomComponent/StatusBadge';
 
 const UserManagementTableComponent = (props) => {
 	const { tableRef, editModalToggle ,urlBackup,tenant,activeTab} = props;
@@ -28,16 +24,11 @@ const UserManagementTableComponent = (props) => {
 	const [sortState, setSortState] = useState({ orderBy: null, orderDirection: 'asc' });
 	const { theme, rowStyles, headerStyles } = useTablestyle();
 	const { showErrorNotification } = useToasterNotification();
-    const canManageUserDetails=usePermissionHook('manage_user');
-    const canViewUserDetails=usePermissionHook('view_user_details');
 	const { userData } = useContext(AuthContext);
 	const accountToggle = useSelector((state: any) => state.authSlice?.account_toggle_button);
 	const mode = accountToggle || 'Admin';
 	const canEditUser = resolveTenantRouteRole(userData) === 'Admin' && mode === 'Admin';
 	const navigate = useNavigate();
-	// useEffect(() => {
-	// 	tableRef.current.onQueryChange();
-	// }, [activeTab]);
 
 
 	const staticColumns  = [
@@ -89,11 +80,6 @@ const UserManagementTableComponent = (props) => {
 			render: (rowData) =>
 				rowData?.joined_date ? Moments(rowData.joined_date, 'date') : '----',
 		},
-		// {
-		// 	title: 'Designation',
-		// 	field: 'active_relations__designation',
-		// 	render: (rowData) => (rowData?.active_relations?.[0]?.designation || '----'),
-		// },
 		{
 			title: 'Email',
 			field: 'email',
@@ -148,12 +134,8 @@ const UserManagementTableComponent = (props) => {
 			title: 'Status',
 			field: 'status',
 			render: (rowData) => (rowData?.status ? (
-				<CustomBadge color={statusColorCodes[rowData?.status]}>
-					{rowData?.status}
-				</CustomBadge>
-			) : (
-				'----'
-			)),
+				<StatusBadge status={rowData?.status}  emptyFallback='----'></StatusBadge>
+			) : null),
 		},
 	];
 
@@ -167,18 +149,6 @@ const UserManagementTableComponent = (props) => {
 			filtering: false,
 			render: (rowData) => (
 				<div className='d-flex gap-1 justify-content-end'>
-					{/* {rowData?.meta_data?.status !== 'Invited' && (
-						<StatusButton
-							status={rowData.meta_data.status}
-							fieldKey='status'
-							tableRef={tableRef}
-							api={`api/users/${rowData.id}`}
-						/>
-					)} */}
-
-                    {/* {rowData?.meta_data?.status === 'Invited' && (
-                         <ResendButton id={rowData.id}/>						
-					)} */}
 					<EditButton modalShow={editModalToggle} id={rowData.id} />
 				</div>
 			),
@@ -208,7 +178,6 @@ const UserManagementTableComponent = (props) => {
 					data={(query) => {
 						return new Promise((resolve, reject) => {
 							let orderBy = '';
-							// let usersList = 'Admin,User,Assistant User';
 							const otherFilters = formatFilters(query.filters);
 							if (query.orderBy) {
 								orderBy =
@@ -216,10 +185,6 @@ const UserManagementTableComponent = (props) => {
 										? `&ordering=-${String(query.orderBy?.field)}`
 										: `&ordering=${String(query.orderBy?.field)}`;
 							}
-                            //  if(isSuperUser){
-							// 	usersList='Admin,User,Superuser,Assistant User'
-							//  }
-							 
 							let url = `/api/hr/accounts/?limit=${
 								query.pageSize
 							}&offset=${query.pageSize * query.page}&search=${query.search}${orderBy}&${otherFilters}`;
@@ -239,7 +204,6 @@ const UserManagementTableComponent = (props) => {
 								})
 								.catch((error) => {
 									showErrorNotification(error);
-									// eslint-disable-next-line prefer-promise-reject-errors
 									reject({
 										data: [],
 										page: query.page,
@@ -272,11 +236,9 @@ const UserManagementTableComponent = (props) => {
 		</div>
 	);
 };
-/* eslint-disable react/forbid-prop-types */
 UserManagementTableComponent.propTypes = {
 	tableRef: PropTypes.object.isRequired,
 	editModalToggle: PropTypes.func.isRequired,
 	urlBackup: PropTypes.object.isRequired,
 };
-/* eslint-enable react/forbid-prop-types */
 export default UserManagementTableComponent;

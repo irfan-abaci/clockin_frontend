@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Spinner } from 'reactstrap';
 import Card, {
 	CardBody,
@@ -19,7 +19,6 @@ const AVATAR_SIZE = 200;
 const ProfileAvatar = () => {
 	const [image, setImage] = useState(null)
 	const [waitingForAxios, setWaitingForAxios] = useState(false)
-	const [imgError, setImgError] = useState(false)
 	const { userData, setUserData } = useContext(AuthContext);
 	const { showErrorNotification } = useToasterNotification()
 	const updateAvatar = (croppedBase64: string) => {
@@ -62,14 +61,9 @@ const ProfileAvatar = () => {
 
 	};
 	const resolvedAvatarSrc = useUserAvatarSrc(userData, Profile);
-	const avatarSrc = image || resolvedAvatarSrc;
 	const hasUploadedAvatar = Boolean(image || resolveUserAvatarSource(userData));
-	const showPlaceholder = !hasUploadedAvatar || imgError;
-	const displaySrc = showPlaceholder ? Profile : avatarSrc;
-
-	useEffect(() => {
-		setImgError(false);
-	}, [userData?.avatar, userData?.avatar_url, image]);
+	const avatarSrc = hasUploadedAvatar ? image || resolvedAvatarSrc : Profile;
+	const showPlaceholder = !hasUploadedAvatar;
 
 	return (
 		<Card className='shadow-3d-info prevent-userselect'>
@@ -104,11 +98,11 @@ const ProfileAvatar = () => {
 							justifyContent: 'center',
 						}}>
 						<img
-							src={displaySrc}
+							key={avatarSrc}
+							src={avatarSrc}
 							alt='Profile avatar'
 							width={AVATAR_SIZE}
 							height={AVATAR_SIZE}
-							onError={() => setImgError(true)}
 							style={{
 								width: '100%',
 								height: '100%',
