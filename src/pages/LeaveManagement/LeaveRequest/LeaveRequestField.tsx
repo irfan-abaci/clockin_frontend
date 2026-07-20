@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { DateRange } from 'react-date-range';
+import EventBusyOutlinedIcon from '@mui/icons-material/EventBusyOutlined';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import FormGroup from '../../../components/bootstrap/forms/FormGroup';
 import ReactSelectComponent from '../../../components/CustomComponent/Select/ReactSelectComponent';
 import Popovers from '../../../components/bootstrap/customPopoverForDateRange';
 import { authAxios } from '../../../axiosInstance';
-import Card, { CardBody, CardHeader } from '../../../components/bootstrap/Card';
-
-import { CardLabel } from '../../../components/bootstrap/Card';
+import {
+	DASHBOARD_LEAVE_THEME,
+	dashboardStatStyle,
+} from '../../Dashboard/dashboardTheme';
 const sessionOptions = [
 	{ label: 'FULL', value: 'FULL' },
 	{ label: 'FIRST HALF', value: 'FIRST_HALF' },
@@ -48,21 +51,27 @@ const LeaveRequestField = ({
 		setValue('to_date', to, { shouldDirty: true, shouldValidate: true });
 	};
 
-	useEffect(()=>{
-		if(leave_type_select){
-			authAxios.get(`/api/hr/leave-balances/`).then((res)=>{
-				console.log(leave_type_select?.label);
-				
-				const leaveBalanceOptions = res.data?.balances?.find((item: any)=>item.leave_type === leave_type_select?.label)
-				console.log(leaveBalanceOptions);
-				setLeaveBalanceOptions(leaveBalanceOptions || {});
-
-			}).catch((err)=>{
-				console.log(err);
-			});
+	useEffect(() => {
+		if (!leave_type_select) {
+			setLeaveBalanceOptions({});
+			return;
 		}
-	},[leave_type_select])
-	console.log(leaveBalanceOptions);
+
+		authAxios
+			.get('/api/hr/leave-balances/')
+			.then((res) => {
+				const balance = res.data?.balances?.find(
+					(item: any) => item.leave_type === leave_type_select?.label,
+				);
+				setLeaveBalanceOptions(balance || {});
+			})
+			.catch(() => {
+				setLeaveBalanceOptions({});
+			});
+	}, [leave_type_select]);
+
+	const usedBalance = Number(leaveBalanceOptions?.used ?? 0);
+	const remainingBalance = Number(leaveBalanceOptions?.remaining ?? 0);
 
 	return (
 		<div className='row'>
@@ -80,15 +89,36 @@ const LeaveRequestField = ({
 			</div>
 			{leave_type_select && (
 				<div className='col-12 mb-2'>
-					<Card className='border-primary border-2'>
-						<CardHeader>
-							<CardLabel className='text-warning'>{leave_type_select?.label} </CardLabel>
-						</CardHeader>
-						<CardBody>
-							<p>Used: <span className=' p-1 rounded-1'>{leaveBalanceOptions?.used || 0}</span></p>
-							<p>Remaining: <span className=' p-1 rounded-1'>{leaveBalanceOptions?.remaining || 0}</span></p>
-						</CardBody>
-					</Card>
+					<div className='rounded-3 border border-secondary border-opacity-25 p-3'>
+						<div className='d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3'>
+							<span className='text-warning fw-semibold small text-uppercase'>
+								{leave_type_select?.label} balance
+							</span>
+							<span className='text-muted small'>Current leave year</span>
+						</div>
+						<div className='hr-dashboard'>
+							<div className='hr-dashboard__stat-row mb-0'>
+								<div
+									className='hr-dashboard__stat-card'
+									style={dashboardStatStyle(DASHBOARD_LEAVE_THEME.pending)}>
+									<div className='hr-dashboard__stat-icon'>
+										<EventBusyOutlinedIcon fontSize='small' />
+									</div>
+									<div className='hr-dashboard__stat-value'>{usedBalance}</div>
+									<div className='hr-dashboard__stat-label'>Used</div>
+								</div>
+								<div
+									className='hr-dashboard__stat-card'
+									style={dashboardStatStyle(DASHBOARD_LEAVE_THEME.approved)}>
+									<div className='hr-dashboard__stat-icon'>
+										<CheckCircleOutlineIcon fontSize='small' />
+									</div>
+									<div className='hr-dashboard__stat-value'>{remainingBalance}</div>
+									<div className='hr-dashboard__stat-label'>Remaining</div>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 			)}
 			<div className='col-12 mb-2'>

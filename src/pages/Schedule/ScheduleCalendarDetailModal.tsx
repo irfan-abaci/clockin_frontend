@@ -21,9 +21,7 @@ type ScheduleCalendarDetailModalProps = {
 	isOpen: boolean;
 	setIsOpen: (open: boolean) => void;
 	selectedDate: Date | null;
-	/** Schedule template id (schedule calendar); omit for group calendar. */
 	scheduleId?: string | number | null;
-	/** Group id when `calendarType` is `group`. */
 	groupId?: string | number | null;
 	calendarType?: 'schedule' | 'group';
 	detail: any | null;
@@ -124,7 +122,6 @@ type ShiftDetailRow = {
 	off?: number;
 	start_time?: string;
 	end_time?: string;
-	/** Group calendar-detail: users working this shift */
 	working_users?: any[];
 };
 
@@ -140,7 +137,6 @@ const formatWorkingUserLabel = (u: any): string => {
 	return '';
 };
 
-/** API returns `shift_details` for schedule calendar-detail; fall back to raw shifts with times. */
 const getShiftDisplayRows = (detail: any | null): ShiftDetailRow[] => {
 	if (!detail) return [];
 	if (Array.isArray(detail.shift_details) && detail.shift_details.length > 0) {
@@ -172,10 +168,8 @@ type ScheduleSummaryCounts = {
 type ScheduleEntryDisplay = {
 	id?: number;
 	name: string;
-	/** Max OT hours per day when set on schedule */
 	otHours?: number | string | null;
 	schedule_summary?: ScheduleSummaryCounts | null;
-	/** From `special_day` on calendar-detail — shown under Schedule(s) with the template/context row. */
 	rowKind?: 'schedule' | 'special_period';
 };
 
@@ -271,14 +265,11 @@ const ScheduleCalendarDetailModal = ({
 
 	const { showErrorNotification, showSuccessNotification } = useToasterNotification();
 	const reactSelectStyle = useSelectStyles(false);
-
 	const statusMeta = getStatusMeta(detail?.status);
 	const statusLabel = statusMeta?.label ?? 'Not Available';
 	const shiftRows = useMemo(() => getShiftDisplayRows(detail), [detail]);
 	const scheduleEntries = useMemo(() => getScheduleEntries(detail), [detail]);
-
 	const leaveList = Array.isArray(detail?.leave_requests) ? detail.leave_requests : [];
-
 	const [editMode, setEditMode] = useState(false);
 	const [scheduleOptions, setScheduleOptions] = useState<{ label: string; value: number }[]>([]);
 	const [scheduleOptionsLoading, setScheduleOptionsLoading] = useState(false);
@@ -339,7 +330,6 @@ const ScheduleCalendarDetailModal = ({
 		return () => {
 			cancelled = true;
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [editMode, excludedScheduleIdList, calendarType]);
 
 	useEffect(() => {
@@ -366,7 +356,6 @@ const ScheduleCalendarDetailModal = ({
 		return () => {
 			cancelled = true;
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [editMode, calendarType, apiDate]);
 
 	useEffect(() => {
@@ -495,7 +484,7 @@ const ScheduleCalendarDetailModal = ({
 								{!editMode && calendarType === 'schedule' && (
 									<Button
 										size='sm'
-										color='secondary'
+										color='dark'
 										isLight
 										onClick={() => setEditMode(true)}>
 										Add Special Schedule

@@ -20,7 +20,8 @@ const normalizeStatusKey = (value: unknown) =>
 	String(value || '')
 		.toLowerCase()
 		.trim()
-		.replace(/\s+/g, '_');
+		.replace(/[\s-]+/g, '_')
+		.replace(/_+/g, '_');
 
 const toTitleCase = (value: string) =>
 	value
@@ -34,6 +35,7 @@ const STATUS_CONFIG: Record<string, StatusConfig> = {
 	blocked: { styleKey: 'Cancelled', icon: 'Block', label: 'Blocked' },
 	inactive: { styleKey: 'Inactive', icon: 'Block' },
 	pending: { styleKey: 'Scheduled', icon: 'Schedule' },
+	pending_hr: { styleKey: 'Scheduled', icon: 'Schedule', label: 'Pending - HR' },
 	expired: { styleKey: 'Cancelled', icon: 'Cancel', label: 'Expired' },
 	cancelled: { styleKey: 'Cancelled', icon: 'Cancel', label: 'Cancelled' },
 	canceled: { styleKey: 'Cancelled', icon: 'Cancel', label: 'Cancelled' },

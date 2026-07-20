@@ -20,7 +20,6 @@ import ContactNumberField from '../../components/CustomComponent/Fields/ContactN
 
 const MyProfile = () => {
 	const { userData, setUserData } = useContext(AuthContext);
-	console.log(userData);
 	const [waitingForAxios, setWaitingForAxios] = useState(false);
 	const {
 		register,
@@ -43,7 +42,6 @@ const MyProfile = () => {
 			})
 
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [userData]);
 
 	const saveHandler = (data) => {
@@ -112,35 +110,6 @@ const MyProfile = () => {
 							style={{ height: '40px' }}
 						/>
 					</FormGroup>
-
-					{/* <FormGroup label='Mobile number *'>
-						<input
-							type='number'
-							{...register('user_contact_phone', {
-								required: true,
-							})}
-							className='form-control'
-							style={{ height: '40px' }}
-							onKeyDown={(evt) => {
-								const invalidKeys = ['e', 'E', '+', '-', '=', '.'];
-								if (invalidKeys.includes(evt.key) || evt.key === 'ArrowDown') {
-									evt.preventDefault();
-								}
-							}}
-							//@ts-ignore
-							maxLength='15'            
-							onInput={(e) => {
-								const input = e.target
-								//@ts-ignore 
-								input.value = input.value.slice(0, 15);
-							  }}	
-						/>
-						{errors.user_contact_phone?.type ? (
-							<span style={{ color: 'red' }}>*This field is required</span>
-						) : (
-							<p />
-						)}
-					</FormGroup> */}
 					<ContactNumberField
 						label="Mobile number *"
 						field_name="user_contact_phone"
@@ -165,7 +134,7 @@ const MyProfile = () => {
 				<CardFooterRight>
 					<Button
 						icon={waitingForAxios ? '' : 'Save'}
-						color='secondary'
+						color='dark'
 						className='w-100'
 						isLight
 						onClick={() => handleSubmit(saveHandler)()}>

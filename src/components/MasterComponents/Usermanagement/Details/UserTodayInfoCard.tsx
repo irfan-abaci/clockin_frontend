@@ -36,6 +36,35 @@ const TodayInfoValue = ({ children }: { children: React.ReactNode }) => (
 	<div className='fw-semibold lh-base'>{children}</div>
 );
 
+const hasMeaningfulAttendance = (attendance: unknown): boolean => {
+	if (attendance == null) return false;
+	if (Array.isArray(attendance)) return attendance.length > 0;
+	if (typeof attendance === 'object') return Object.keys(attendance as object).length > 0;
+	return String(attendance).trim() !== '';
+};
+
+const isTodayDetailEmpty = (detail: any): boolean => {
+	if (!detail) return true;
+
+	const hasStatus = detail?.status != null && String(detail.status).trim() !== '';
+	const hasSchedule = Array.isArray(detail?.schedule)
+		? detail.schedule.length > 0
+		: detail?.schedule != null && String(detail.schedule).trim() !== '';
+	const hasAttendance = hasMeaningfulAttendance(detail?.attendance);
+	const hasLeave = Array.isArray(detail?.leave_requests) && detail.leave_requests.length > 0;
+	const hasSpecialDay = Array.isArray(detail?.special_day) && detail.special_day.length > 0;
+	const hasOvertime = Boolean(detail?.overtime || detail?.ot);
+
+	return (
+		!hasStatus &&
+		!hasSchedule &&
+		!hasAttendance &&
+		!hasLeave &&
+		!hasSpecialDay &&
+		!hasOvertime
+	);
+};
+
 const UserTodayInfoCard = ({ userId, fillHeight = false }: Props) => {
     const [detail, setDetail] = useState<any | null>(null);
     const [loading, setLoading] = useState(false);
@@ -84,14 +113,18 @@ const UserTodayInfoCard = ({ userId, fillHeight = false }: Props) => {
                     <p className='text-muted mb-0 small text-center py-4'>
                         No details available for today.
                     </p>
+                ) : isTodayDetailEmpty(detail) ? (
+                    <p className='text-muted mb-0 small text-center py-4'>
+                        No schedule or attendance recorded for today.
+                    </p>
                 ) : (
                     <div className='row g-3 align-items-start'>
                         <div className='col-12 col-md-6 col-xl-3 d-flex flex-column'>
                             <TodayInfoLabel>Status</TodayInfoLabel>
                             <TodayInfoValue>
                                 <StatusBadge
-                                    status={detail?.status || 'Not Available'}
-                                    emptyFallback='Not Available'
+                                    status={detail?.status ?? undefined}
+                                    emptyFallback='—'
                                 />
                             </TodayInfoValue>
                         </div>

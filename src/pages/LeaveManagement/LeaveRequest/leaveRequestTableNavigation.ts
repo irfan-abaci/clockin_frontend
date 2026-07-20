@@ -2,6 +2,7 @@ import { allRoutesObject } from '../../../routes/RoutesMenu';
 
 export const LEAVE_REQUEST_STATUS_LABELS: Record<string, string> = {
 	PENDING: 'Pending',
+	'PENDING - HR': 'Pending - HR',
 	APPROVED: 'Approved',
 	REJECTED: 'Rejected',
 	CANCELLED: 'Cancelled',
@@ -10,6 +11,7 @@ export const LEAVE_REQUEST_STATUS_LABELS: Record<string, string> = {
 
 export const LEAVE_STATUS_LOOKUP: Record<string, string> = {
 	PENDING: LEAVE_REQUEST_STATUS_LABELS.PENDING,
+	'PENDING - HR': LEAVE_REQUEST_STATUS_LABELS['PENDING - HR'],
 	APPLIED: LEAVE_REQUEST_STATUS_LABELS.APPLIED,
 	APPROVED: LEAVE_REQUEST_STATUS_LABELS.APPROVED,
 	REJECTED: LEAVE_REQUEST_STATUS_LABELS.REJECTED,

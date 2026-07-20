@@ -94,10 +94,29 @@ const AddSite = ({ isOpen, setIsOpen, tableRef, title, id }: any) => {
 				const site = siteRes?.data;
 				const selectedParent =
 					siteOptions.find((opt: any) => opt.value === site?.parent_site?.id) || null;
-				const selectedAuthorityOne =
-					userOptions.find((opt: any) => opt.value === site?.authority_one?.id) || null;
-				const selectedAuthorityTwo =
-					userOptions.find((opt: any) => opt.value === site?.authority_two?.id) || null;
+				const resolveAuthorityOption = (
+					options: any[],
+					authority: any,
+					authorityName?: string | null,
+				) => {
+					const authorityId =
+						authority != null && typeof authority === 'object' ? authority.id : authority;
+					if (authorityId == null || authorityId === '') return null;
+					return (
+						options.find((opt: any) => Number(opt.value) === Number(authorityId)) ||
+						(authorityName ? { label: authorityName, value: authorityId } : null)
+					);
+				};
+				const selectedAuthorityOne = resolveAuthorityOption(
+					userOptions,
+					site?.authority_one,
+					site?.authority_one_name,
+				);
+				const selectedAuthorityTwo = resolveAuthorityOption(
+					userOptions,
+					site?.authority_two,
+					site?.authority_two_name,
+				);
 				const selectedSiteType = site?.type ? { label: site.type, value: site.type } : null;
 
 				const tzField = site?.timezone ?? site?.time_zone;

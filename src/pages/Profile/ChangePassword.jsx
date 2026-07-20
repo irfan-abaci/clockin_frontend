@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import { Spinner } from 'reactstrap';
@@ -146,7 +145,7 @@ const ChangePassword = () => {
 			<CardFooter>
 				<CardFooterRight>
 					<Button
-						color='secondary'
+						color='dark'
 						icon={waitingForAxios ? '' : 'Save'}
 						isDisable={waitingForAxios}
 						className='mt-2'
@@ -162,4 +161,3 @@ const ChangePassword = () => {
 };
 
 export default ChangePassword;
-/* eslint-enable @typescript-eslint/no-use-before-define */
